@@ -35,10 +35,15 @@ const app = {
 
             // Menu
             categoryTabs: document.getElementById('categoryTabs'),
+            menuSearch: document.getElementById('menuSearch'), // New
             menuGrid: document.getElementById('menuGrid'),
             guestCount: document.getElementById('guestCount'),
             guestMinus: document.getElementById('guestMinus'),
             guestPlus: document.getElementById('guestPlus'),
+
+            // Data Controls
+            btnBackup: document.getElementById('btnBackup'),
+            fileRestore: document.getElementById('fileRestore'),
 
             // Procurement
             procTabs: document.querySelectorAll('.proc-tab'),
@@ -130,6 +135,15 @@ const app = {
 
         // Theme
         this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
+
+        // Search
+        this.elements.menuSearch.addEventListener('input', (e) => {
+            this.renderMenu(e.target.value);
+        });
+
+        // Backup & Restore
+        this.elements.btnBackup.addEventListener('click', () => this.backupData());
+        this.elements.fileRestore.addEventListener('change', (e) => this.restoreData(e));
     },
 
     // ============ 视图切换 ============
@@ -540,6 +554,58 @@ const app = {
         this.elements.toast.textContent = message;
         this.elements.toast.classList.add('show');
         setTimeout(() => this.elements.toast.classList.remove('show'), 2500);
+    },
+
+    // ============ 数据备份与恢复 (Night Shift Feature) ============
+    backupData() {
+        const data = {
+            version: appConfig.version,
+            timestamp: new Date().toISOString(),
+            cart: this.cart,
+            procurement: this.procurement,
+            guestCount: this.guestCount
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `banquet_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.toast('✅ 数据备份已下载');
+    },
+
+    restoreData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                // Basic validation
+                if (data.cart && Array.isArray(data.procurement)) {
+                    if (confirm(`准备恢复 ${data.timestamp.slice(0, 10)} 的备份数据？\n当前未保存的更改将会丢失。`)) {
+                        this.cart = data.cart;
+                        this.procurement = data.procurement;
+                        this.guestCount = data.guestCount || 10;
+                        this.saveData();
+                        location.reload(); // Reload to refresh everything
+                    }
+                } else {
+                    alert('数据格式无效');
+                }
+            } catch (err) {
+                alert('读取文件失败: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        // Reset input
+        event.target.value = '';
     }
 };
 

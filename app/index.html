@@ -49,21 +49,36 @@
     <main class="main-content">
         <!-- ===== 点菜视图 ===== -->
         <section id="menuView" class="view active">
-            <!-- 分类选项卡 -->
-            <div class="category-tabs" id="categoryTabs">
-                <!-- JavaScript生成 -->
+            <!-- 分类选项卡 & 搜索 -->
+            <div class="menu-filters">
+                <div class="category-tabs" id="categoryTabs">
+                    <!-- JavaScript生成 -->
+                </div>
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="menuSearch" placeholder="搜索菜品...">
+                </div>
             </div>
 
             <!-- 客人数量设置 -->
             <div class="guest-setting">
-                <label>
-                    <i class="bi bi-people-fill"></i>
-                    用餐人数:
-                </label>
-                <div class="guest-input-group">
-                    <button class="guest-btn" id="guestMinus">-</button>
-                    <input type="number" id="guestCount" value="10" min="1" max="100">
-                    <button class="guest-btn" id="guestPlus">+</button>
+                <div class="guest-controls">
+                    <label><i class="bi bi-people-fill"></i> 用餐人数:</label>
+                    <div class="guest-input-group">
+                        <button class="guest-btn" id="guestMinus">-</button>
+                        <input type="number" id="guestCount" value="10" min="1" max="100">
+                        <button class="guest-btn" id="guestPlus">+</button>
+                    </div>
+                </div>
+                <div class="data-controls">
+                    <button class="btn btn-ghost btn-sm" id="btnBackup" title="导出数据备份">
+                        <i class="bi bi-download"></i> 备份
+                    </button>
+                    <button class="btn btn-ghost btn-sm" id="btnRestore" title="恢复数据备份"
+                        onclick="document.getElementById('fileRestore').click()">
+                        <i class="bi bi-upload"></i> 恢复
+                    </button>
+                    <input type="file" id="fileRestore" style="display:none" accept=".json">
                 </div>
             </div>
 

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="宴会管理系统 - 包厢点菜与物资采购">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <title>宴会管理系统 v2.0</title>
+</head>
+
+<body>
+    <!-- ========== 顶部导航栏 ========== -->
+    <header class="main-header">
+        <div class="header-left">
+            <h1 class="app-title">
+                <i class="bi bi-cup-hot-fill"></i>
+                <span id="appName">宴会管理系统</span>
+            </h1>
+        </div>
+        <div class="header-center">
+            <nav class="main-nav">
+                <button class="nav-btn active" data-view="menu">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                    <span>包厢点菜</span>
+                </button>
+                <button class="nav-btn" data-view="procurement">
+                    <i class="bi bi-basket"></i>
+                    <span>物资采购</span>
+                </button>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="cart-icon" id="cartToggle">
+                <i class="bi bi-cart-fill"></i>
+                <span id="cartCount" class="cart-count">0</span>
+            </div>
+            <button class="icon-btn" id="themeToggle" title="切换主题">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========== 主内容区域 ========== -->
+    <main class="main-content">
+        <!-- ===== 点菜视图 ===== -->
+        <section id="menuView" class="view active">
+            <!-- 分类选项卡 -->
+            <div class="category-tabs" id="categoryTabs">
+                <!-- JavaScript生成 -->
+            </div>
+
+            <!-- 客人数量设置 -->
+            <div class="guest-setting">
+                <label>
+                    <i class="bi bi-people-fill"></i>
+                    用餐人数:
+                </label>
+                <div class="guest-input-group">
+                    <button class="guest-btn" id="guestMinus">-</button>
+                    <input type="number" id="guestCount" value="10" min="1" max="100">
+                    <button class="guest-btn" id="guestPlus">+</button>
+                </div>
+            </div>
+
+            <!-- 菜品网格 -->
+            <div class="menu-grid" id="menuGrid">
+                <!-- JavaScript生成 -->
+            </div>
+        </section>
+
+        <!-- ===== 采购视图 ===== -->
+        <section id="procurementView" class="view">
+            <div class="procurement-header">
+                <h2><i class="bi bi-clipboard-check"></i> 物资采购清单</h2>
+                <div class="procurement-actions">
+                    <button class="btn btn-secondary" id="exportCSV">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> 导出CSV
+                    </button>
+                    <button class="btn btn-primary" id="printList">
+                        <i class="bi bi-printer"></i> 打印清单
+                    </button>
+                </div>
+            </div>
+
+            <!-- 采购分类标签 -->
+            <div class="procurement-tabs">
+                <button class="proc-tab active" data-category="all">全部</button>
+                <button class="proc-tab" data-category="fruit">🍎 水果</button>
+                <button class="proc-tab" data-category="beverage">🥤 饮料</button>
+                <button class="proc-tab" data-category="other">📦 其他</button>
+            </div>
+
+            <!-- 采购表格 -->
+            <div class="table-wrapper">
+                <table class="procurement-table">
+                    <thead>
+                        <tr>
+                            <th>品名</th>
+                            <th>人均用量</th>
+                            <th>单位</th>
+                            <th>总需求</th>
+                            <th>单价 (¥)</th>
+                            <th>预算 (¥)</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procurementBody">
+                        <!-- JavaScript生成 -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="total-label">总预算</td>
+                            <td colspan="2" id="totalBudget" class="total-value">¥0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- 添加物资按钮 -->
+            <button class="btn btn-add" id="addProcurementItem">
+                <i class="bi bi-plus-circle"></i> 添加物资
+            </button>
+        </section>
+    </main>
+
+    <!-- ========== 购物车侧边栏 ========== -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2><i class="bi bi-cart3"></i> 已选菜品</h2>
+            <button class="close-btn" id="closeCart">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <!-- JavaScript生成 -->
+        </div>
+
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>已选菜品</span>
+                <span id="itemCount">0 道</span>
+            </div>
+            <div class="summary-row total">
+                <span>预估总价</span>
+                <span id="totalPrice">¥0</span>
+            </div>
+        </div>
+
+        <div class="cart-actions">
+            <button class="btn btn-ghost" id="clearCart">
+                <i class="bi bi-trash"></i> 清空
+            </button>
+            <button class="btn btn-primary" id="printMenu">
+                <i class="bi bi-printer"></i> 打印菜单
+            </button>
+        </div>
+    </aside>
+
+    <!-- ========== 打印区域 ========== -->
+    <div id="printArea" class="print-area"></div>
+
+    <!-- ========== Toast 提示 ========== -->
+    <div id="toast" class="toast"></div>
+
+    <!-- JavaScript -->
+    <script src="dataBase.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

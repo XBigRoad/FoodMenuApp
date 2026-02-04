@@ -3,131 +3,149 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>业务申请 - 包厢点菜/招待物资</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
         rel="stylesheet">
 </head>
 
 <body>
-    <main class="main-content">
-        <div class="form-header">
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="app-header">
             <h1><i class="bi bi-clipboard-check"></i> 业务申请</h1>
             <p>包厢点菜 / 招待物资</p>
-        </div>
+        </header>
 
-        <div class="sticky-nav">
-            <div class="form-tabs">
-                <button class="form-tab active" data-panel="ordering"><i class="bi bi-cup-hot"></i> 包厢点菜</button>
-                <button class="form-tab" data-panel="supplies"><i class="bi bi-basket"></i> 招待物资</button>
-            </div>
-        </div>
-
-        <div class="submitter-info">
-            <h3><i class="bi bi-person-badge"></i> 基本信息</h3>
-            <div class="info-grid">
-                <div class="info-field">
-                    <label>申请人 *</label>
-                    <input type="text" id="submitterName" placeholder="请输入姓名" required>
-                </div>
-                <div class="info-field">
-                    <label>部门</label>
-                    <select id="submitterDept">
-                        <option value="">请选择部门</option>
-                        <option value="销售部">销售部</option>
-                        <option value="市场部">市场部</option>
-                        <option value="技术部">技术部</option>
-                        <option value="人事部">人事部</option>
-                        <option value="财务部">财务部</option>
-                        <option value="其他">其他</option>
-                    </select>
-                </div>
-                <div class="info-field">
-                    <label>用餐/使用日期 *</label>
-                    <input type="date" id="useDate" required>
-                </div>
-                <div class="info-field">
-                    <label>人数 *</label>
-                    <input type="number" id="guestCount" value="10" min="1" max="100" required>
-                </div>
-            </div>
-        </div>
-
-        <!-- 包厢点菜面板 -->
-        <div class="form-panel active" id="panelOrdering">
-            <div class="category-tabs" id="categoryTabs" style="margin-bottom: 12px;"></div>
-            <div class="menu-grid" id="menuGrid"></div>
-
-            <div class="submitter-info" style="margin-top: 24px;">
-                <h3><i class="bi bi-cart-check"></i> 已选菜品</h3>
-                <div id="selectedSummary" style="color: var(--text-muted); font-size: 13px;">尚未选择任何菜品</div>
-            </div>
-
-            <div class="submitter-info">
-                <h3><i class="bi bi-chat-left-text"></i> 备注</h3>
-                <textarea id="orderRemarks" placeholder="如有特殊要求请在此说明" style="height:60px; resize:none;"></textarea>
-            </div>
-        </div>
-
-        <!-- 招待物资面板 -->
-        <div class="form-panel" id="panelSupplies">
-            <div class="category-filter" id="supplyFilter" style="margin-bottom: 20px;">
-                <button class="cat-btn active" data-cat="all">全部</button>
-                <button class="cat-btn" data-cat="fruit"><i class="bi bi-apple"></i> 水果</button>
-                <button class="cat-btn" data-cat="beverage"><i class="bi bi-cup-straw"></i> 饮料</button>
-            </div>
-
-            <div id="suppliesList"></div>
-
-            <div class="submitter-info" style="margin-top: 24px;">
-                <h3><i class="bi bi-list-check"></i> 已选物资</h3>
-                <div id="suppliesSummary" style="color: var(--text-muted); font-size: 13px;">尚未选择任何物资</div>
-            </div>
-
-            <div class="submitter-info">
-                <h3><i class="bi bi-chat-left-text"></i> 备注</h3>
-                <textarea id="supplyRemarks" placeholder="如有特殊要求请在此说明" style="height:60px; resize:none;"></textarea>
-            </div>
-        </div>
-
-        <div class="action-bar-placeholder"></div>
-    </main>
-
-    <!-- 悬浮底部栏 -->
-    <div class="sticky-footer" id="stickyFooter">
-        <div class="footer-price" id="footerPriceArea">
-            <span class="footer-label">预估总价</span>
-            <span class="footer-total" id="footerTotal">¥0</span>
-        </div>
-        <button class="submit-btn-sticky" id="footerSubmitBtn">
-            <i class="bi bi-send-fill"></i> 提交订单
-        </button>
-    </div>
-
-    <div class="success-modal" id="successModal">
-        <div class="success-content">
-            <i class="bi bi-check-circle-fill"></i>
-            <h2>提交成功！</h2>
-            <p>您的申请已提交，行政部门会尽快处理。</p>
-            <button class="btn btn-primary" style="width:100%; margin-top:16px; padding:12px;"
-                onclick="location.reload()">
-                继续填写
+        <!-- 主Tab切换 -->
+        <div class="main-tabs">
+            <button class="main-tab active" data-panel="ordering">
+                <i class="bi bi-cup-hot-fill"></i> 包厢点菜
+            </button>
+            <button class="main-tab" data-panel="supplies">
+                <i class="bi bi-basket-fill"></i> 招待物资
             </button>
         </div>
+
+        <!-- 内容区 -->
+        <div class="content-area">
+            <!-- 基本信息卡片 (可折叠) -->
+            <div class="info-card" id="infoCard">
+                <div class="info-card-header" onclick="toggleInfoCard()">
+                    <div class="info-card-title">
+                        <i class="bi bi-person-badge-fill"></i> 基本信息
+                    </div>
+                    <div class="info-card-toggle">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-field">
+                        <label>申请人 *</label>
+                        <input type="text" id="submitterName" placeholder="请输入姓名">
+                    </div>
+                    <div class="info-field">
+                        <label>部门</label>
+                        <select id="submitterDept">
+                            <option value="">选择部门</option>
+                            <option value="销售部">销售部</option>
+                            <option value="市场部">市场部</option>
+                            <option value="技术部">技术部</option>
+                            <option value="人事部">人事部</option>
+                            <option value="财务部">财务部</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="info-field">
+                        <label>日期 *</label>
+                        <input type="date" id="useDate">
+                    </div>
+                    <div class="info-field">
+                        <label>人数</label>
+                        <input type="number" id="guestCount" value="10" min="1" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 包厢点菜面板 -->
+            <div class="panel active" id="panelOrdering">
+                <div class="category-filter" id="categoryFilter"></div>
+                <div class="menu-list" id="menuList"></div>
+
+                <div class="selected-summary" id="orderSummary" style="display: none;">
+                    <div class="selected-summary-title">
+                        <i class="bi bi-cart-check"></i> 已选菜品
+                    </div>
+                    <div class="selected-tags" id="orderTags"></div>
+                </div>
+
+                <div class="remarks-section">
+                    <textarea id="orderRemarks" placeholder="备注说明（如有特殊要求请在此填写）"></textarea>
+                </div>
+            </div>
+
+            <!-- 招待物资面板 -->
+            <div class="panel" id="panelSupplies">
+                <div class="category-filter" id="supplyFilter">
+                    <button class="cat-pill active" data-cat="all">全部</button>
+                    <button class="cat-pill" data-cat="fruit"><i class="bi bi-apple"></i> 水果</button>
+                    <button class="cat-pill" data-cat="beverage"><i class="bi bi-cup-straw"></i> 饮料</button>
+                </div>
+
+                <div id="supplyList"></div>
+
+                <div class="selected-summary" id="supplySummary" style="display: none;">
+                    <div class="selected-summary-title">
+                        <i class="bi bi-list-check"></i> 已选物资
+                    </div>
+                    <div class="selected-tags" id="supplyTags"></div>
+                </div>
+
+                <div class="remarks-section">
+                    <textarea id="supplyRemarks" placeholder="备注说明（如有特殊要求请在此填写）"></textarea>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- 底部操作栏 -->
+    <footer class="sticky-footer">
+        <div class="cart-badge">
+            <i class="bi bi-cart3"></i>
+            <span class="cart-count" id="cartCount">0</span>
+        </div>
+        <div class="footer-info">
+            <div class="footer-label">预估总价</div>
+            <div class="footer-total"><span id="footerTotal">¥0</span></div>
+        </div>
+        <button class="submit-btn" id="submitBtn">
+            <i class="bi bi-send-fill"></i> 提交
+        </button>
+    </footer>
+
+    <!-- 成功弹窗 -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
+            <h2>提交成功！</h2>
+            <p>您的申请已提交，行政部门会尽快处理。</p>
+            <button class="modal-btn" onclick="location.reload()">继续填写</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
     <div id="toast" class="toast"></div>
 
     <script src="../shared/data.js"></script>
     <script>
         (function () {
-            // --- 状态 ---
-            let state = {
+            // ===== 状态管理 =====
+            const state = {
+                currentTab: 'ordering',
                 orderCart: [],
                 supplyCart: [],
-                currentTab: 'ordering', // 'ordering' or 'supplies'
                 menuItems: [],
                 procurement: [],
                 settings: {},
@@ -135,7 +153,7 @@
                 currentSupplyCat: 'all'
             };
 
-            // --- 初始化 ---
+            // ===== 初始化 =====
             function init() {
                 state.menuItems = DataManager.getMenuItems();
                 state.procurement = DataManager.getProcurement();
@@ -148,8 +166,9 @@
                 renderSupplies();
                 updateFooter();
 
+                // 隐藏价格 (如果设置)
                 if (!state.settings.showPriceToStaff) {
-                    document.getElementById('footerPriceArea').style.display = 'none';
+                    document.querySelector('.footer-info').style.display = 'none';
                 }
             }
 
@@ -159,125 +178,76 @@
                 document.getElementById('useDate').value = tomorrow.toISOString().split('T')[0];
             }
 
-            // --- 事件绑定 ---
+            // ===== 事件绑定 =====
             function bindEvents() {
-                // Tab切换
-                document.querySelectorAll('.form-tab').forEach(tab => {
+                // 主Tab切换
+                document.querySelectorAll('.main-tab').forEach(tab => {
                     tab.onclick = function () {
-                        document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+                        document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
                         this.classList.add('active');
-
                         state.currentTab = this.dataset.panel;
-                        document.getElementById('panel' + state.currentTab.charAt(0).toUpperCase() + state.currentTab.slice(1)).classList.add('active');
+                        document.getElementById('panel' + capitalize(state.currentTab)).classList.add('active');
                         updateFooter();
                     };
                 });
 
-                // 底部提交按钮
-                document.getElementById('footerSubmitBtn').onclick = () => {
+                // 提交按钮
+                document.getElementById('submitBtn').onclick = () => {
                     if (state.currentTab === 'ordering') submitOrder();
                     else submitSupplies();
                 };
 
+                // 菜单事件委托
+                document.getElementById('menuList').onclick = function (e) {
+                    const btn = e.target.closest('.qty-btn');
+                    if (!btn) return;
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const delta = btn.classList.contains('plus') ? 1 : -1;
+                    adjustOrderQty(id, delta);
+                };
+
                 // 物资筛选
                 document.getElementById('supplyFilter').onclick = function (e) {
-                    const btn = e.target.closest('.cat-btn');
+                    const btn = e.target.closest('.cat-pill');
                     if (!btn) return;
-                    this.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    this.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     state.currentSupplyCat = btn.dataset.cat;
                     renderSupplies();
                 };
 
-                // 菜单格子 - 事件委托
-                document.getElementById('menuGrid').onclick = function (e) {
+                // 物资事件委托
+                document.getElementById('supplyList').onclick = function (e) {
                     const btn = e.target.closest('.qty-btn');
-                    if (btn) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        // 添加点击动画效果
-                        btn.style.transform = 'scale(0.9)';
-                        setTimeout(() => btn.style.transform = 'scale(1)', 150);
-
-                        const id = btn.dataset.id;
-                        const delta = btn.classList.contains('qty-plus') ? 1 : -1;
-                        adjustOrderQty(id, delta);
-                    }
+                    if (!btn) return;
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    const delta = btn.classList.contains('plus') ? 1 : -1;
+                    adjustSupplyQty(id, delta);
                 };
 
-                // 物资列表 - 事件委托
-                document.getElementById('suppliesList').onclick = function (e) {
-                    const btn = e.target.closest('.qty-btn');
-                    if (btn) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        btn.style.transform = 'scale(0.9)';
-                        setTimeout(() => btn.style.transform = 'scale(1)', 150);
-
-                        const id = btn.dataset.id;
-                        const delta = btn.classList.contains('supply-plus') ? 1 : -1;
-                        adjustSupplyQty(id, delta);
-                    }
-                };
-
-                document.getElementById('suppliesList').onchange = function (e) {
-                    if (e.target.classList.contains('qty-input')) {
+                document.getElementById('supplyList').onchange = function (e) {
+                    if (e.target.classList.contains('supply-qty-input')) {
                         setSupplyQty(e.target.dataset.id, e.target.value);
                     }
                 };
             }
 
-            // --- 视图更新 ---
-            function updateFooter() {
-                const isOrdering = state.currentTab === 'ordering';
-                const cart = isOrdering ? state.orderCart : state.supplyCart;
-
-                // 计算总价
-                let total = 0;
-                if (isOrdering) {
-                    total = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
-                } else {
-                    cart.forEach(c => {
-                        const item = state.procurement.find(p => p.id === c.id);
-                        let price = 0;
-                        if (item && item.quotes && item.winnerId) {
-                            const quote = item.quotes.find(q => q.supplierId === item.winnerId);
-                            if (quote) price = quote.price;
-                        }
-                        total += price * c.qty;
-                    });
-                }
-
-                // 更新显示
-                document.getElementById('footerTotal').textContent = `¥${total.toLocaleString()}`;
-
-                const btn = document.getElementById('footerSubmitBtn');
-                btn.innerHTML = isOrdering
-                    ? `<i class="bi bi-send-fill"></i> 提交点菜单 (${cart.length})`
-                    : `<i class="bi bi-send-fill"></i> 提交物资单 (${cart.length})`;
-
-                // 按钮状态
-                if (cart.length === 0) {
-                    btn.style.opacity = '0.7';
-                } else {
-                    btn.style.opacity = '1';
-                }
-            }
-
-            // --- 菜单逻辑 ---
+            // ===== 渲染函数 =====
             function renderCategories() {
-                const container = document.getElementById('categoryTabs');
-                let html = '<button class="category-tab active" data-cat="all">全部</button>';
+                const container = document.getElementById('categoryFilter');
+                let html = '<button class="cat-pill active" data-cat="all">全部</button>';
                 categories.forEach(c => {
-                    html += `<button class="category-tab" data-cat="${c.id}"><i class="bi ${c.icon}"></i> ${c.name}</button>`;
+                    html += `<button class="cat-pill" data-cat="${c.id}"><i class="bi ${c.icon}"></i> ${c.name}</button>`;
                 });
                 container.innerHTML = html;
 
                 container.onclick = function (e) {
-                    const btn = e.target.closest('.category-tab');
+                    const btn = e.target.closest('.cat-pill');
                     if (!btn) return;
-                    this.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
+                    this.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     state.currentMenuCat = btn.dataset.cat;
                     renderMenu();
@@ -290,30 +260,67 @@
                     : state.menuItems.filter(i => i.category === state.currentMenuCat);
 
                 const showPrice = state.settings.showPriceToStaff;
+                const icons = { cold: 'snow2', hot: 'fire', soup: 'droplet-fill', staple: 'basket2-fill', dessert: 'cake2-fill', fruit: 'apple', beverage: 'cup-straw' };
 
-                document.getElementById('menuGrid').innerHTML = items.map(item => {
+                document.getElementById('menuList').innerHTML = items.map(item => {
                     const inCart = state.orderCart.find(c => c.id === item.id);
                     const qty = inCart ? inCart.qty : 0;
+                    const icon = icons[item.category] || 'egg-fried';
+
                     return `
-                    <div class="menu-item ${qty > 0 ? 'selected' : ''}" data-id="${item.id}">
+                    <div class="menu-item ${qty > 0 ? 'selected' : ''}">
                         ${qty > 0 ? '<div class="item-check"><i class="bi bi-check"></i></div>' : ''}
-                        <div class="item-header">
-                            <span class="item-name">${item.name}</span>
-                            ${showPrice ? `<span class="item-price">${appConfig.currency}${item.price}</span>` : ''}
+                        <div class="menu-item-icon"><i class="bi bi-${icon}"></i></div>
+                        <div class="menu-item-info">
+                            <div class="menu-item-name">${item.name}</div>
+                            <div class="menu-item-meta">/${item.unit}</div>
                         </div>
-                        <div class="item-footer">
-                            <span class="item-unit">/${item.unit}</span>
-                            <div class="item-quantity">
-                                <button type="button" class="qty-btn qty-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
-                                <span class="qty-value">${qty}</span>
-                                <button type="button" class="qty-btn qty-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
-                            </div>
+                        ${showPrice ? `<div class="menu-item-price">¥${item.price}</div>` : ''}
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
+                            <span class="qty-value">${qty}</span>
+                            <button type="button" class="qty-btn plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
                         </div>
                     </div>
                 `;
                 }).join('');
             }
 
+            function renderSupplies() {
+                const items = state.currentSupplyCat === 'all'
+                    ? state.procurement
+                    : state.procurement.filter(p => p.category === state.currentSupplyCat);
+
+                const showPrice = state.settings.showPriceToStaff;
+
+                document.getElementById('supplyList').innerHTML = items.map(item => {
+                    const inCart = state.supplyCart.find(c => c.id === item.id);
+                    const qty = inCart ? inCart.qty : 0;
+
+                    let price = 0;
+                    if (item.quotes && item.winnerId) {
+                        const quote = item.quotes.find(q => q.supplierId === item.winnerId);
+                        if (quote) price = quote.price;
+                    }
+
+                    return `
+                    <div class="supply-item">
+                        <div class="supply-item-info">
+                            <div class="supply-item-name">${item.name}</div>
+                            <div class="supply-item-spec">${item.spec || ''} · ${item.perCapita}${item.unit}/人</div>
+                        </div>
+                        ${showPrice && price ? `<div class="supply-item-price">¥${price}/${item.unit}</div>` : ''}
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
+                            <input type="number" class="supply-qty-input" value="${qty}" min="0" data-id="${item.id}">
+                            <button type="button" class="qty-btn plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            }
+
+            // ===== 购物车操作 =====
             function adjustOrderQty(id, delta) {
                 const item = state.menuItems.find(m => m.id === id);
                 if (!item) return;
@@ -326,57 +333,9 @@
                     state.orderCart.push({ id, qty: 1, name: item.name, price: item.price, unit: item.unit });
                 }
 
-                renderMenu(); // 重新渲染以更新状态和样式
+                renderMenu();
                 updateOrderSummary();
                 updateFooter();
-            }
-
-            function updateOrderSummary() {
-                const container = document.getElementById('selectedSummary');
-                if (state.orderCart.length === 0) {
-                    container.innerHTML = '尚未选择任何菜品';
-                    return;
-                }
-                container.innerHTML = state.orderCart.map(c =>
-                    `<span style="display:inline-block; background:var(--bg-tertiary); padding:4px 12px; border-radius:20px; margin:0 8px 8px 0; font-size:13px; border:1px solid var(--border);">
-                    ${c.name} <span style="color:var(--primary); font-weight:700;">×${c.qty}</span>
-                </span>`
-                ).join('');
-            }
-
-            // --- 物资逻辑 ---
-            function renderSupplies() {
-                const items = state.currentSupplyCat === 'all'
-                    ? state.procurement
-                    : state.procurement.filter(p => p.category === state.currentSupplyCat);
-
-                const showPrice = state.settings.showPriceToStaff;
-
-                document.getElementById('suppliesList').innerHTML = items.map(item => {
-                    const inCart = state.supplyCart.find(c => c.id === item.id);
-                    const qty = inCart ? inCart.qty : 0;
-
-                    let winnerPrice = 0;
-                    if (item.quotes && item.winnerId) {
-                        const quote = item.quotes.find(q => q.supplierId === item.winnerId);
-                        if (quote) winnerPrice = quote.price;
-                    }
-
-                    return `
-                    <div class="supply-item">
-                        <div style="flex:1;">
-                            <div class="name">${item.name}</div>
-                            <div class="spec">${item.spec || ''} · ${item.perCapita}${item.unit}/人</div>
-                        </div>
-                        ${showPrice && winnerPrice ? `<div class="price">¥${winnerPrice}/${item.unit}</div>` : ''}
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button type="button" class="qty-btn supply-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
-                            <input type="number" class="qty-input" value="${qty}" min="0" data-id="${item.id}">
-                            <button type="button" class="qty-btn supply-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
-                        </div>
-                    </div>
-                `;
-                }).join('');
             }
 
             function adjustSupplyQty(id, delta) {
@@ -403,33 +362,81 @@
                 const item = state.procurement.find(p => p.id === id);
                 if (!item) return;
 
-                let cartItem = state.supplyCart.find(c => c.id === id);
                 if (qty === 0) {
                     state.supplyCart = state.supplyCart.filter(c => c.id !== id);
-                } else if (cartItem) {
-                    cartItem.qty = qty;
                 } else {
-                    state.supplyCart.push({ id, qty, name: item.name, spec: item.spec, unit: item.unit });
+                    let cartItem = state.supplyCart.find(c => c.id === id);
+                    if (cartItem) {
+                        cartItem.qty = qty;
+                    } else {
+                        state.supplyCart.push({ id, qty, name: item.name, spec: item.spec, unit: item.unit });
+                    }
                 }
 
                 updateSupplySummary();
                 updateFooter();
             }
 
-            function updateSupplySummary() {
-                const container = document.getElementById('suppliesSummary');
-                if (state.supplyCart.length === 0) {
-                    container.innerHTML = '尚未选择任何物资';
+            // ===== 摘要更新 =====
+            function updateOrderSummary() {
+                const container = document.getElementById('orderSummary');
+                const tagsContainer = document.getElementById('orderTags');
+
+                if (state.orderCart.length === 0) {
+                    container.style.display = 'none';
                     return;
                 }
-                container.innerHTML = state.supplyCart.map(c =>
-                    `<span style="display:inline-block; background:var(--bg-tertiary); padding:4px 12px; border-radius:20px; margin:0 8px 8px 0; font-size:13px; border:1px solid var(--border);">
-                    ${c.name} <span style="color:var(--primary); font-weight:700;">${c.qty}${c.unit}</span>
-                </span>`
+
+                container.style.display = 'block';
+                tagsContainer.innerHTML = state.orderCart.map(c =>
+                    `<span class="selected-tag">${c.name} <span class="qty">×${c.qty}</span></span>`
                 ).join('');
             }
 
-            // --- 提交 ---
+            function updateSupplySummary() {
+                const container = document.getElementById('supplySummary');
+                const tagsContainer = document.getElementById('supplyTags');
+
+                if (state.supplyCart.length === 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                container.style.display = 'block';
+                tagsContainer.innerHTML = state.supplyCart.map(c =>
+                    `<span class="selected-tag">${c.name} <span class="qty">${c.qty}${c.unit}</span></span>`
+                ).join('');
+            }
+
+            function updateFooter() {
+                const isOrdering = state.currentTab === 'ordering';
+                const cart = isOrdering ? state.orderCart : state.supplyCart;
+
+                // 计算总价
+                let total = 0;
+                if (isOrdering) {
+                    total = cart.reduce((sum, c) => sum + c.price * c.qty, 0);
+                } else {
+                    cart.forEach(c => {
+                        const item = state.procurement.find(p => p.id === c.id);
+                        let price = 0;
+                        if (item && item.quotes && item.winnerId) {
+                            const quote = item.quotes.find(q => q.supplierId === item.winnerId);
+                            if (quote) price = quote.price;
+                        }
+                        total += price * c.qty;
+                    });
+                }
+
+                // 更新UI
+                document.getElementById('cartCount').textContent = cart.length;
+                document.getElementById('footerTotal').textContent = `¥${total.toLocaleString()}`;
+
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = `<i class="bi bi-send-fill"></i> 提交${isOrdering ? '点菜单' : '物资单'}`;
+            }
+
+            // ===== 提交 =====
             function getBasicInfo() {
                 return {
                     name: document.getElementById('submitterName').value.trim(),
@@ -476,12 +483,22 @@
                 document.getElementById('successModal').classList.add('show');
             }
 
+            // ===== 工具函数 =====
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
             function toast(msg) {
                 const t = document.getElementById('toast');
                 t.textContent = msg;
                 t.classList.add('show');
                 setTimeout(() => t.classList.remove('show'), 2500);
             }
+
+            // 折叠信息卡片
+            window.toggleInfoCard = function () {
+                document.getElementById('infoCard').classList.toggle('collapsed');
+            };
 
             // 启动
             document.addEventListener('DOMContentLoaded', init);

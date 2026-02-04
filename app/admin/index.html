@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
         rel="stylesheet">
     <style>
-        /* 管理后台专用样式 */
         .login-overlay {
             position: fixed;
             inset: 0;
@@ -61,10 +60,6 @@
             cursor: pointer;
         }
 
-        .login-box button:hover {
-            background: var(--primary-dark);
-        }
-
         .login-error {
             color: var(--danger);
             font-size: 14px;
@@ -77,6 +72,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .admin-header h1 {
@@ -91,6 +88,7 @@
             margin-bottom: 24px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .admin-tab {
@@ -120,7 +118,7 @@
             display: block;
         }
 
-        .submission-card {
+        .card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
@@ -128,11 +126,16 @@
             margin-bottom: 16px;
         }
 
-        .submission-header {
+        .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 16px;
         }
 
         .submission-meta {
@@ -140,12 +143,7 @@
             gap: 16px;
             color: var(--text-secondary);
             font-size: 14px;
-        }
-
-        .submission-items {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
         }
 
         .status-badge {
@@ -173,12 +171,96 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+        }
+
+        .data-table input,
+        .data-table select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            width: 48px;
+            height: 24px;
+            appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: var(--primary);
+        }
+
+        .toggle-switch input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::before {
+            left: 26px;
+        }
+
+        .bulk-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            resize: vertical;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .winner-badge {
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-left: 4px;
         }
     </style>
 </head>
 
 <body>
-    <!-- 登录遮罩 -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h1><i class="bi bi-shield-lock"></i> 管理员登录</h1>
@@ -186,66 +268,150 @@
             <input type="password" id="adminPassword" placeholder="输入密码"
                 onkeypress="if(event.key==='Enter')admin.login()">
             <button onclick="admin.login()">登 录</button>
-            <div class="login-error" id="loginError">密码错误，请重试</div>
+            <div class="login-error" id="loginError">密码错误</div>
         </div>
     </div>
 
-    <!-- 管理后台主界面 -->
     <main class="main-content" id="adminMain" style="display: none;">
         <div class="admin-header">
             <h1><i class="bi bi-gear-fill"></i> 管理后台</h1>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn btn-ghost" onclick="admin.copyFormLink()"><i class="bi bi-link-45deg"></i>
-                    复制表单链接</button>
+                    表单链接</button>
                 <button class="btn btn-ghost" onclick="admin.backup()"><i class="bi bi-download"></i> 备份</button>
                 <button class="btn btn-ghost" onclick="admin.logout()"><i class="bi bi-box-arrow-right"></i> 退出</button>
             </div>
         </div>
 
-        <!-- 功能标签页 -->
         <div class="admin-tabs">
-            <button class="admin-tab active" data-panel="submissions"><i class="bi bi-inbox"></i> 订单管理</button>
+            <button class="admin-tab active" data-panel="orders"><i class="bi bi-inbox"></i> 点菜订单</button>
+            <button class="admin-tab" data-panel="supplies"><i class="bi bi-basket"></i> 物资订单</button>
             <button class="admin-tab" data-panel="menu"><i class="bi bi-grid-3x3-gap"></i> 菜单管理</button>
+            <button class="admin-tab" data-panel="procurement"><i class="bi bi-cart4"></i> 采购比价</button>
+            <button class="admin-tab" data-panel="suppliers"><i class="bi bi-building"></i> 供应商</button>
             <button class="admin-tab" data-panel="settings"><i class="bi bi-sliders"></i> 系统设置</button>
         </div>
 
-        <!-- 订单管理面板 -->
-        <div class="admin-panel active" id="panelSubmissions">
+        <!-- 点菜订单 -->
+        <div class="admin-panel active" id="panelOrders">
             <div class="action-bar">
-                <button class="btn btn-secondary" onclick="admin.refreshSubmissions()"><i
-                        class="bi bi-arrow-clockwise"></i> 刷新</button>
-                <button class="btn btn-secondary" onclick="admin.exportSubmissions()"><i
-                        class="bi bi-file-earmark-spreadsheet"></i> 导出Excel</button>
+                <button class="btn btn-secondary" onclick="admin.refreshOrders()"><i class="bi bi-arrow-clockwise"></i>
+                    刷新</button>
+                <button class="btn btn-secondary" onclick="admin.exportOrders()"><i
+                        class="bi bi-file-earmark-spreadsheet"></i> 导出</button>
                 <span style="flex:1;"></span>
-                <span id="submissionCount" style="color:var(--text-secondary);"></span>
+                <span id="orderCount" style="color:var(--text-secondary);"></span>
             </div>
-            <div id="submissionsList"></div>
+            <div id="ordersList"></div>
         </div>
 
-        <!-- 菜单管理面板 -->
+        <!-- 物资订单 -->
+        <div class="admin-panel" id="panelSupplies">
+            <div class="action-bar">
+                <button class="btn btn-secondary" onclick="admin.refreshSupplyOrders()"><i
+                        class="bi bi-arrow-clockwise"></i> 刷新</button>
+                <button class="btn btn-secondary" onclick="admin.exportSupplyOrders()"><i
+                        class="bi bi-file-earmark-spreadsheet"></i> 导出</button>
+                <span style="flex:1;"></span>
+                <span id="supplyOrderCount" style="color:var(--text-secondary);"></span>
+            </div>
+            <div id="supplyOrdersList"></div>
+        </div>
+
+        <!-- 菜单管理 -->
         <div class="admin-panel" id="panelMenu">
             <div class="action-bar">
                 <button class="btn btn-primary" onclick="admin.addMenuItem()"><i class="bi bi-plus-circle"></i>
                     添加菜品</button>
-                <button class="btn btn-secondary" onclick="admin.addCategory()"><i class="bi bi-folder-plus"></i>
-                    添加分类</button>
             </div>
             <div id="menuEditor" class="menu-grid"></div>
         </div>
 
-        <!-- 系统设置面板 -->
-        <div class="admin-panel" id="panelSettings">
-            <div class="submitter-info">
-                <h3><i class="bi bi-key"></i> 修改管理密码</h3>
-                <div style="display:flex; gap:10px; margin-top:12px;">
-                    <input type="password" id="newPassword" placeholder="新密码"
-                        style="flex:1; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md);">
-                    <button class="btn btn-primary" onclick="admin.changePassword()">更新密码</button>
+        <!-- 采购比价 -->
+        <div class="admin-panel" id="panelProcurement">
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="admin.showBulkImport()"><i class="bi bi-file-plus"></i>
+                    批量导入</button>
+                <button class="btn btn-secondary" onclick="admin.addProcurementItem()"><i class="bi bi-plus-circle"></i>
+                    单个添加</button>
+                <button class="btn btn-secondary" onclick="admin.exportProcurement()"><i
+                        class="bi bi-file-earmark-spreadsheet"></i> 导出清单</button>
+            </div>
+
+            <!-- 批量导入区域 -->
+            <div id="bulkImportArea" class="card" style="display:none;">
+                <h3 style="margin-bottom:12px;"><i class="bi bi-file-plus"></i> 批量导入水果/饮料</h3>
+                <p style="color:var(--text-secondary); margin-bottom:12px;">每行一个名称，粘贴Excel整列数据即可</p>
+                <textarea id="bulkImportText" class="bulk-textarea" placeholder="苹果&#10;香蕉&#10;橙子&#10;葡萄"></textarea>
+                <div style="margin-top:12px; display:flex; gap:10px;">
+                    <select id="bulkImportCategory"
+                        style="padding:10px; border:1px solid var(--border); border-radius:var(--radius-md);">
+                        <option value="fruit">水果</option>
+                        <option value="beverage">饮料</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="admin.doBulkImport()"><i class="bi bi-check"></i>
+                        确认导入</button>
+                    <button class="btn btn-ghost" onclick="admin.hideBulkImport()">取消</button>
                 </div>
             </div>
-            <div class="submitter-info" style="margin-top:20px;">
-                <h3><i class="bi bi-upload"></i> 恢复数据备份</h3>
-                <p style="color:var(--text-secondary); margin:12px 0;">上传之前下载的 JSON 备份文件</p>
+
+            <table class="data-table" id="procurementTable">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>规格</th>
+                        <th>单位</th>
+                        <th>人均</th>
+                        <th>供应商报价</th>
+                        <th>中标</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="procurementBody"></tbody>
+            </table>
+        </div>
+
+        <!-- 供应商管理 -->
+        <div class="admin-panel" id="panelSuppliers">
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="admin.addSupplier()"><i class="bi bi-plus-circle"></i>
+                    添加供应商</button>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>联系方式</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="suppliersBody"></tbody>
+            </table>
+        </div>
+
+        <!-- 系统设置 -->
+        <div class="admin-panel" id="panelSettings">
+            <div class="card">
+                <h3 style="margin-bottom:16px;"><i class="bi bi-eye"></i> 显示设置</h3>
+                <div class="toggle-switch" style="margin-bottom:16px;">
+                    <input type="checkbox" id="showPriceToggle" onchange="admin.toggleShowPrice()">
+                    <label>向员工显示价格</label>
+                </div>
+                <p style="color:var(--text-secondary); font-size:13px;">开启后，员工在填写表单时可以看到菜品和物资的价格</p>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:16px;"><i class="bi bi-key"></i> 修改管理密码</h3>
+                <div style="display:flex; gap:10px;">
+                    <input type="password" id="newPassword" placeholder="新密码"
+                        style="flex:1; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md);">
+                    <button class="btn btn-primary" onclick="admin.changePassword()">更新</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:16px;"><i class="bi bi-upload"></i> 恢复数据</h3>
                 <input type="file" id="restoreFile" accept=".json" onchange="admin.restore(event)">
             </div>
         </div>
@@ -257,16 +423,12 @@
     <script>
         const admin = {
             init() {
-                // 检查是否已登录
-                if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-                    this.showAdmin();
-                }
+                if (sessionStorage.getItem('adminLoggedIn') === 'true') this.showAdmin();
                 this.bindTabs();
             },
 
             login() {
-                const pwd = document.getElementById('adminPassword').value;
-                if (DataManager.verifyAdminPassword(pwd)) {
+                if (DataManager.verifyAdminPassword(document.getElementById('adminPassword').value)) {
                     sessionStorage.setItem('adminLoggedIn', 'true');
                     this.showAdmin();
                 } else {
@@ -274,16 +436,17 @@
                 }
             },
 
-            logout() {
-                sessionStorage.removeItem('adminLoggedIn');
-                location.reload();
-            },
+            logout() { sessionStorage.removeItem('adminLoggedIn'); location.reload(); },
 
             showAdmin() {
                 document.getElementById('loginOverlay').style.display = 'none';
                 document.getElementById('adminMain').style.display = 'block';
-                this.refreshSubmissions();
+                this.refreshOrders();
+                this.refreshSupplyOrders();
                 this.renderMenuEditor();
+                this.renderProcurement();
+                this.renderSuppliers();
+                this.loadSettings();
             },
 
             bindTabs() {
@@ -297,82 +460,126 @@
                 });
             },
 
-            // ============ 订单管理 ============
-            refreshSubmissions() {
+            // ========== 点菜订单 ==========
+            refreshOrders() {
                 const subs = DataManager.getSubmissions().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                document.getElementById('submissionCount').textContent = `共 ${subs.length} 条订单`;
+                document.getElementById('orderCount').textContent = `共 ${subs.length} 条`;
 
                 if (subs.length === 0) {
-                    document.getElementById('submissionsList').innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:40px;">暂无订单</p>';
+                    document.getElementById('ordersList').innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:40px;">暂无订单</p>';
                     return;
                 }
 
-                document.getElementById('submissionsList').innerHTML = subs.map(sub => `
-                    <div class="submission-card">
-                        <div class="submission-header">
-                            <strong>${sub.submitter.name}</strong> 
+                document.getElementById('ordersList').innerHTML = subs.map(sub => `
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">${sub.submitter.name} - ${sub.submitter.dept || '未填写'}</span>
                             <span class="status-badge ${sub.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
                                 ${sub.status === 'confirmed' ? '✓ 已确认' : '待处理'}
                             </span>
                         </div>
                         <div class="submission-meta">
-                            <span><i class="bi bi-building"></i> ${sub.submitter.dept || '未填写'}</span>
                             <span><i class="bi bi-calendar"></i> ${sub.mealDate}</span>
                             <span><i class="bi bi-people"></i> ${sub.guestCount}人</span>
                             <span><i class="bi bi-clock"></i> ${new Date(sub.timestamp).toLocaleString()}</span>
                         </div>
-                        <div class="submission-items">
+                        <div style="margin-top:12px;">
                             ${sub.items.map(i => `<span style="display:inline-block; background:var(--bg-tertiary); padding:4px 10px; border-radius:20px; margin:4px 4px 4px 0; font-size:13px;">${i.name} ×${i.qty}</span>`).join('')}
-                            <div style="margin-top:12px; font-weight:700;">总计: ¥${sub.totalPrice}</div>
-                            ${sub.remarks ? `<div style="margin-top:8px; color:var(--text-secondary); font-size:13px;">备注: ${sub.remarks}</div>` : ''}
                         </div>
+                        <div style="margin-top:12px; font-weight:700;">总计: ¥${sub.totalPrice}</div>
+                        ${sub.remarks ? `<div style="margin-top:8px; color:var(--text-secondary); font-size:13px;">备注: ${sub.remarks}</div>` : ''}
                         <div style="margin-top:12px; display:flex; gap:8px;">
-                            ${sub.status !== 'confirmed' ? `<button class="btn btn-primary btn-sm" onclick="admin.confirmSubmission('${sub.id}')"><i class="bi bi-check"></i> 确认</button>` : ''}
-                            <button class="btn btn-ghost btn-sm" onclick="admin.deleteSubmission('${sub.id}')"><i class="bi bi-trash"></i> 删除</button>
+                            ${sub.status !== 'confirmed' ? `<button class="btn btn-primary btn-sm" onclick="admin.confirmOrder('${sub.id}')"><i class="bi bi-check"></i> 确认</button>` : ''}
+                            <button class="btn btn-ghost btn-sm" onclick="admin.deleteOrder('${sub.id}')"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                 `).join('');
             },
 
-            confirmSubmission(id) {
+            confirmOrder(id) {
                 const data = DataManager.getData();
                 const sub = data.submissions.find(s => s.id === id);
-                if (sub) {
-                    sub.status = 'confirmed';
-                    DataManager.saveData(data);
-                    this.refreshSubmissions();
-                    this.toast('✅ 已确认');
-                }
+                if (sub) { sub.status = 'confirmed'; DataManager.saveData(data); this.refreshOrders(); this.toast('✅ 已确认'); }
             },
 
-            deleteSubmission(id) {
-                if (!confirm('确定删除此订单？')) return;
+            deleteOrder(id) {
+                if (!confirm('确定删除？')) return;
                 const data = DataManager.getData();
                 data.submissions = data.submissions.filter(s => s.id !== id);
                 DataManager.saveData(data);
-                this.refreshSubmissions();
+                this.refreshOrders();
                 this.toast('✅ 已删除');
             },
 
-            exportSubmissions() {
+            exportOrders() {
                 const subs = DataManager.getSubmissions();
                 if (subs.length === 0) { this.toast('⚠️ 暂无数据'); return; }
-
-                let csv = '\uFEFF姓名,部门,用餐日期,人数,菜品,总价,备注,状态,提交时间\n';
+                let csv = '\uFEFF姓名,部门,日期,人数,菜品,总价,备注,状态\n';
                 subs.forEach(s => {
-                    const items = s.items.map(i => `${i.name}×${i.qty}`).join('; ');
-                    csv += `"${s.submitter.name}","${s.submitter.dept}","${s.mealDate}",${s.guestCount},"${items}",${s.totalPrice},"${s.remarks || ''}","${s.status}","${s.timestamp}"\n`;
+                    csv += `"${s.submitter.name}","${s.submitter.dept}","${s.mealDate}",${s.guestCount},"${s.items.map(i => i.name + '×' + i.qty).join('; ')}",${s.totalPrice},"${s.remarks || ''}","${s.status}"\n`;
                 });
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `订单导出_${new Date().toLocaleDateString()}.csv`;
-                a.click();
-                this.toast('✅ 已导出');
+                this.downloadCSV(csv, '点菜订单');
             },
 
-            // ============ 菜单管理 ============
+            // ========== 物资订单 ==========
+            refreshSupplyOrders() {
+                const subs = DataManager.getProcurementSubmissions().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                document.getElementById('supplyOrderCount').textContent = `共 ${subs.length} 条`;
+
+                if (subs.length === 0) {
+                    document.getElementById('supplyOrdersList').innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:40px;">暂无订单</p>';
+                    return;
+                }
+
+                document.getElementById('supplyOrdersList').innerHTML = subs.map(sub => `
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">${sub.submitter.name} - ${sub.submitter.dept || '未填写'}</span>
+                            <span class="status-badge ${sub.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                                ${sub.status === 'confirmed' ? '✓ 已确认' : '待处理'}
+                            </span>
+                        </div>
+                        <div class="submission-meta">
+                            <span><i class="bi bi-calendar"></i> ${sub.useDate}</span>
+                            <span><i class="bi bi-people"></i> ${sub.guestCount}人</span>
+                        </div>
+                        <div style="margin-top:12px;">
+                            ${sub.items.map(i => `<span style="display:inline-block; background:var(--bg-tertiary); padding:4px 10px; border-radius:20px; margin:4px 4px 4px 0; font-size:13px;">${i.name} ${i.qty}${i.unit}</span>`).join('')}
+                        </div>
+                        ${sub.remarks ? `<div style="margin-top:8px; color:var(--text-secondary); font-size:13px;">备注: ${sub.remarks}</div>` : ''}
+                        <div style="margin-top:12px; display:flex; gap:8px;">
+                            ${sub.status !== 'confirmed' ? `<button class="btn btn-primary btn-sm" onclick="admin.confirmSupplyOrder('${sub.id}')"><i class="bi bi-check"></i> 确认</button>` : ''}
+                            <button class="btn btn-ghost btn-sm" onclick="admin.deleteSupplyOrder('${sub.id}')"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            confirmSupplyOrder(id) {
+                const data = DataManager.getData();
+                const sub = data.procurementSubmissions.find(s => s.id === id);
+                if (sub) { sub.status = 'confirmed'; DataManager.saveData(data); this.refreshSupplyOrders(); this.toast('✅ 已确认'); }
+            },
+
+            deleteSupplyOrder(id) {
+                if (!confirm('确定删除？')) return;
+                const data = DataManager.getData();
+                data.procurementSubmissions = data.procurementSubmissions.filter(s => s.id !== id);
+                DataManager.saveData(data);
+                this.refreshSupplyOrders();
+            },
+
+            exportSupplyOrders() {
+                const subs = DataManager.getProcurementSubmissions();
+                if (subs.length === 0) { this.toast('⚠️ 暂无数据'); return; }
+                let csv = '\uFEFF姓名,部门,日期,人数,物资,备注,状态\n';
+                subs.forEach(s => {
+                    csv += `"${s.submitter.name}","${s.submitter.dept}","${s.useDate}",${s.guestCount},"${s.items.map(i => i.name + i.qty + i.unit).join('; ')}","${s.remarks || ''}","${s.status}"\n`;
+                });
+                this.downloadCSV(csv, '物资订单');
+            },
+
+            // ========== 菜单管理 ==========
             renderMenuEditor() {
                 const items = DataManager.getMenuItems();
                 document.getElementById('menuEditor').innerHTML = items.map(item => `
@@ -393,14 +600,12 @@
             },
 
             addMenuItem() {
-                const name = prompt('菜品名称:');
-                if (!name) return;
-                const price = parseFloat(prompt('价格 (¥):', '50')) || 50;
-                const unit = prompt('单位 (份/条/例等):', '份') || '份';
-                const catId = prompt('分类ID (appetizer/main/soup/staple/dessert/fruit/beverage):', 'main') || 'main';
-
+                const name = prompt('菜品名称:'); if (!name) return;
+                const price = parseFloat(prompt('价格:', '50')) || 50;
+                const unit = prompt('单位:', '份') || '份';
+                const cat = prompt('分类(appetizer/main/soup/staple/dessert/fruit/beverage):', 'main') || 'main';
                 const data = DataManager.getData();
-                data.menuItems.push({ id: 'item_' + Date.now(), category: catId, name, price, unit });
+                data.menuItems.push({ id: 'item_' + Date.now(), category: cat, name, price, unit });
                 DataManager.saveData(data);
                 this.renderMenuEditor();
                 this.toast('✅ 已添加');
@@ -410,43 +615,194 @@
                 const data = DataManager.getData();
                 const item = data.menuItems.find(i => i.id === id);
                 if (!item) return;
-
-                const name = prompt('菜品名称:', item.name);
-                if (!name) return;
-                const price = parseFloat(prompt('价格 (¥):', item.price));
-
+                const name = prompt('名称:', item.name); if (!name) return;
                 item.name = name;
-                item.price = price;
+                item.price = parseFloat(prompt('价格:', item.price)) || item.price;
                 DataManager.saveData(data);
                 this.renderMenuEditor();
-                this.toast('✅ 已更新');
             },
 
             deleteMenuItem(id) {
-                if (!confirm('确定删除此菜品？')) return;
+                if (!confirm('确定删除？')) return;
                 const data = DataManager.getData();
                 data.menuItems = data.menuItems.filter(i => i.id !== id);
                 DataManager.saveData(data);
                 this.renderMenuEditor();
-                this.toast('✅ 已删除');
             },
 
-            // ============ 系统设置 ============
+            // ========== 采购比价 ==========
+            renderProcurement() {
+                const items = DataManager.getProcurement();
+                const suppliers = DataManager.getSuppliers();
+
+                document.getElementById('procurementBody').innerHTML = items.map(item => {
+                    const quotes = item.quotes || [];
+                    const quotesHtml = quotes.map(q => {
+                        const sup = suppliers.find(s => s.id === q.supplierId);
+                        const isWinner = item.winnerId === q.supplierId;
+                        return `<span style="display:inline-block; margin:2px 4px; padding:2px 8px; background:${isWinner ? 'var(--success)' : 'var(--bg-tertiary)'}; color:${isWinner ? 'white' : 'inherit'}; border-radius:10px; font-size:12px;">
+                            ${sup ? sup.name : '?'}: ¥${q.price}
+                            ${isWinner ? '<i class="bi bi-check"></i>' : ''}
+                        </span>`;
+                    }).join('');
+
+                    return `<tr>
+                        <td><input value="${item.name}" onchange="admin.updateProcItem('${item.id}', 'name', this.value)" style="width:100px;"></td>
+                        <td><input value="${item.spec || ''}" onchange="admin.updateProcItem('${item.id}', 'spec', this.value)" style="width:80px;"></td>
+                        <td>${item.unit}</td>
+                        <td><input type="number" step="0.1" value="${item.perCapita}" onchange="admin.updateProcItem('${item.id}', 'perCapita', parseFloat(this.value))" style="width:60px;"></td>
+                        <td>
+                            ${quotesHtml || '<span style="color:var(--text-muted);">无报价</span>'}
+                            <button class="btn btn-ghost btn-sm" onclick="admin.addQuote('${item.id}')" style="margin-left:4px;"><i class="bi bi-plus"></i></button>
+                        </td>
+                        <td>
+                            <select onchange="admin.setWinner('${item.id}', this.value)" style="padding:6px;">
+                                <option value="">选择中标</option>
+                                ${quotes.map(q => {
+                        const sup = suppliers.find(s => s.id === q.supplierId);
+                        return `<option value="${q.supplierId}" ${item.winnerId === q.supplierId ? 'selected' : ''}>${sup ? sup.name : '?'}</option>`;
+                    }).join('')}
+                            </select>
+                        </td>
+                        <td><button class="btn btn-ghost btn-sm" onclick="admin.deleteProcItem('${item.id}')"><i class="bi bi-trash"></i></button></td>
+                    </tr>`;
+                }).join('');
+            },
+
+            updateProcItem(id, field, value) {
+                const data = DataManager.getData();
+                const item = data.procurement.find(p => p.id === id);
+                if (item) { item[field] = value; DataManager.saveData(data); }
+            },
+
+            deleteProcItem(id) {
+                if (!confirm('确定删除？')) return;
+                const data = DataManager.getData();
+                data.procurement = data.procurement.filter(p => p.id !== id);
+                DataManager.saveData(data);
+                this.renderProcurement();
+            },
+
+            addProcurementItem() {
+                const name = prompt('物资名称:'); if (!name) return;
+                const cat = prompt('分类(fruit/beverage):', 'fruit') || 'fruit';
+                const data = DataManager.getData();
+                data.procurement.push({
+                    id: 'p_' + Date.now(), category: cat, name, spec: '', unit: 'kg', perCapita: 0.2, quotes: [], winnerId: null
+                });
+                DataManager.saveData(data);
+                this.renderProcurement();
+            },
+
+            addQuote(procId) {
+                const suppliers = DataManager.getSuppliers();
+                if (suppliers.length === 0) { this.toast('⚠️ 请先添加供应商'); return; }
+
+                const supName = prompt('供应商名称:\n' + suppliers.map(s => s.name).join('\n'));
+                const sup = suppliers.find(s => s.name === supName);
+                if (!sup) { this.toast('⚠️ 未找到该供应商'); return; }
+
+                const price = parseFloat(prompt('报价 (¥):'));
+                if (isNaN(price)) return;
+
+                DataManager.addQuote(procId, sup.id, price);
+                this.renderProcurement();
+                this.toast('✅ 已添加报价');
+            },
+
+            setWinner(procId, supplierId) {
+                DataManager.setWinner(procId, supplierId || null);
+                this.renderProcurement();
+            },
+
+            showBulkImport() { document.getElementById('bulkImportArea').style.display = 'block'; },
+            hideBulkImport() { document.getElementById('bulkImportArea').style.display = 'none'; },
+
+            doBulkImport() {
+                const text = document.getElementById('bulkImportText').value;
+                const cat = document.getElementById('bulkImportCategory').value;
+                if (!text.trim()) { this.toast('⚠️ 请输入内容'); return; }
+
+                const count = DataManager.bulkImportFruits(text, cat);
+                this.toast(`✅ 已导入 ${count} 条`);
+                this.hideBulkImport();
+                document.getElementById('bulkImportText').value = '';
+                this.renderProcurement();
+            },
+
+            exportProcurement() {
+                const items = DataManager.getProcurement();
+                const suppliers = DataManager.getSuppliers();
+                let csv = '\uFEFF名称,规格,单位,人均,中标供应商,中标价格\n';
+                items.forEach(item => {
+                    let winnerName = '', winnerPrice = '';
+                    if (item.winnerId) {
+                        const sup = suppliers.find(s => s.id === item.winnerId);
+                        const quote = item.quotes?.find(q => q.supplierId === item.winnerId);
+                        winnerName = sup ? sup.name : '';
+                        winnerPrice = quote ? quote.price : '';
+                    }
+                    csv += `"${item.name}","${item.spec || ''}","${item.unit}",${item.perCapita},"${winnerName}",${winnerPrice}\n`;
+                });
+                this.downloadCSV(csv, '采购清单');
+            },
+
+            // ========== 供应商管理 ==========
+            renderSuppliers() {
+                const suppliers = DataManager.getSuppliers();
+                document.getElementById('suppliersBody').innerHTML = suppliers.map(sup => `
+                    <tr>
+                        <td><input value="${sup.name}" onchange="admin.updateSupplier('${sup.id}', 'name', this.value)"></td>
+                        <td><input value="${sup.contact || ''}" onchange="admin.updateSupplier('${sup.id}', 'contact', this.value)"></td>
+                        <td><input value="${sup.note || ''}" onchange="admin.updateSupplier('${sup.id}', 'note', this.value)"></td>
+                        <td><button class="btn btn-ghost btn-sm" onclick="admin.deleteSupplier('${sup.id}')"><i class="bi bi-trash"></i></button></td>
+                    </tr>
+                `).join('');
+            },
+
+            addSupplier() {
+                const name = prompt('供应商名称:'); if (!name) return;
+                const contact = prompt('联系方式:') || '';
+                DataManager.addSupplier({ name, contact, note: '' });
+                this.renderSuppliers();
+                this.toast('✅ 已添加');
+            },
+
+            updateSupplier(id, field, value) {
+                DataManager.updateSupplier(id, { [field]: value });
+            },
+
+            deleteSupplier(id) {
+                if (!confirm('确定删除？')) return;
+                DataManager.deleteSupplier(id);
+                this.renderSuppliers();
+            },
+
+            // ========== 系统设置 ==========
+            loadSettings() {
+                const settings = DataManager.getSettings();
+                document.getElementById('showPriceToggle').checked = settings.showPriceToStaff;
+            },
+
+            toggleShowPrice() {
+                const checked = document.getElementById('showPriceToggle').checked;
+                DataManager.updateSettings({ showPriceToStaff: checked });
+                this.toast(checked ? '✅ 员工可见价格' : '✅ 员工不可见价格');
+            },
+
             changePassword() {
-                const newPwd = document.getElementById('newPassword').value;
-                if (!newPwd || newPwd.length < 4) {
-                    this.toast('⚠️ 密码至少4位');
-                    return;
-                }
-                DataManager.changeAdminPassword(newPwd);
+                const pwd = document.getElementById('newPassword').value;
+                if (!pwd || pwd.length < 4) { this.toast('⚠️ 密码至少4位'); return; }
+                DataManager.changeAdminPassword(pwd);
                 document.getElementById('newPassword').value = '';
                 this.toast('✅ 密码已更新');
             },
 
+            // ========== 工具 ==========
             copyFormLink() {
                 const link = location.origin + location.pathname.replace('/admin/', '/form/');
                 navigator.clipboard.writeText(link);
-                this.toast('✅ 表单链接已复制');
+                this.toast('✅ 链接已复制');
             },
 
             backup() {
@@ -460,19 +816,26 @@
             },
 
             restore(event) {
-                const file = event.target.files[0];
-                if (!file) return;
+                const file = event.target.files[0]; if (!file) return;
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     if (DataManager.importBackup(e.target.result)) {
                         this.toast('✅ 数据已恢复');
-                        this.refreshSubmissions();
-                        this.renderMenuEditor();
+                        location.reload();
                     } else {
-                        this.toast('❌ 文件格式无效');
+                        this.toast('❌ 文件无效');
                     }
                 };
                 reader.readAsText(file);
+            },
+
+            downloadCSV(csv, name) {
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${name}_${new Date().toLocaleDateString()}.csv`;
+                a.click();
+                this.toast('✅ 已导出');
             },
 
             toast(msg) {

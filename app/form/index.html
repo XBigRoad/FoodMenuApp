@@ -134,6 +134,8 @@
             text-align: center;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
 
         .submit-btn {
@@ -186,6 +188,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
         }
 
         .cat-btn {
@@ -195,6 +198,7 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
+            color: var(--text-primary);
         }
 
         .cat-btn.active {
@@ -212,13 +216,11 @@
             <p>包厢点菜 / 招待物资</p>
         </div>
 
-        <!-- 功能切换 -->
         <div class="form-tabs">
             <button class="form-tab active" data-panel="ordering"><i class="bi bi-cup-hot"></i> 包厢点菜</button>
             <button class="form-tab" data-panel="supplies"><i class="bi bi-basket"></i> 招待物资</button>
         </div>
 
-        <!-- 基本信息（共用）-->
         <div class="submitter-info">
             <h3><i class="bi bi-person-badge"></i> 基本信息</h3>
             <div class="info-grid">
@@ -249,7 +251,7 @@
             </div>
         </div>
 
-        <!-- ===== 包厢点菜面板 ===== -->
+        <!-- 包厢点菜面板 -->
         <div class="form-panel active" id="panelOrdering">
             <div class="category-tabs" id="categoryTabs" style="margin-bottom: 20px;"></div>
             <div class="menu-grid" id="menuGrid"></div>
@@ -267,14 +269,14 @@
                 <textarea id="orderRemarks" placeholder="如有特殊要求请在此说明" style="height:60px; resize:none;"></textarea>
             </div>
 
-            <button class="submit-btn" onclick="form.submitOrder()">
+            <button class="submit-btn" id="submitOrderBtn">
                 <i class="bi bi-send"></i> 提交点菜单
             </button>
         </div>
 
-        <!-- ===== 招待物资面板 ===== -->
+        <!-- 招待物资面板 -->
         <div class="form-panel" id="panelSupplies">
-            <div class="category-filter">
+            <div class="category-filter" id="supplyFilter">
                 <button class="cat-btn active" data-cat="all">全部</button>
                 <button class="cat-btn" data-cat="fruit"><i class="bi bi-apple"></i> 水果</button>
                 <button class="cat-btn" data-cat="beverage"><i class="bi bi-cup-straw"></i> 饮料</button>
@@ -295,20 +297,19 @@
                 <textarea id="supplyRemarks" placeholder="如有特殊要求请在此说明" style="height:60px; resize:none;"></textarea>
             </div>
 
-            <button class="submit-btn" onclick="form.submitSupplies()">
+            <button class="submit-btn" id="submitSupplyBtn">
                 <i class="bi bi-send"></i> 提交物资申请
             </button>
         </div>
     </main>
 
-    <!-- 成功弹窗 -->
     <div class="success-modal" id="successModal">
         <div class="success-content">
             <i class="bi bi-check-circle-fill"></i>
             <h2>提交成功！</h2>
             <p>您的申请已提交，行政部门会尽快处理。</p>
-            <button class="btn btn-primary" onclick="location.reload()"
-                style="width:100%; margin-top:16px; padding:12px;">
+            <button class="btn btn-primary" style="width:100%; margin-top:16px; padding:12px;"
+                onclick="location.reload()">
                 继续填写
             </button>
         </div>
@@ -318,61 +319,101 @@
 
     <script src="../shared/data.js"></script>
     <script>
-        const form = {
-            orderCart: [],
-            supplyCart: [],
-            menuItems: [],
-            procurement: [],
-            settings: {},
+        (function () {
+            // --- 状态 ---
+            let orderCart = [];
+            let supplyCart = [];
+            let menuItems = [];
+            let procurement = [];
+            let settings = {};
+            let currentMenuCat = 'all';
+            let currentSupplyCat = 'all';
 
-            init() {
-                this.menuItems = DataManager.getMenuItems();
-                this.procurement = DataManager.getProcurement();
-                this.settings = DataManager.getSettings();
+            // --- 初始化 ---
+            function init() {
+                menuItems = DataManager.getMenuItems();
+                procurement = DataManager.getProcurement();
+                settings = DataManager.getSettings();
 
-                this.setDefaultDate();
-                this.bindTabs();
-                this.bindCategoryFilters();
-                this.renderCategories();
-                this.renderMenu();
-                this.renderSupplies();
+                setDefaultDate();
+                bindEvents();
+                renderCategories();
+                renderMenu();
+                renderSupplies();
 
-                // 根据设置隐藏价格
-                if (!this.settings.showPriceToStaff) {
+                if (!settings.showPriceToStaff) {
                     document.getElementById('totalPriceRow').style.display = 'none';
                     document.getElementById('suppliesTotalRow').style.display = 'none';
                 }
-            },
+            }
 
-            setDefaultDate() {
+            function setDefaultDate() {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
                 document.getElementById('useDate').value = tomorrow.toISOString().split('T')[0];
-            },
+            }
 
-            bindTabs() {
+            // --- 事件绑定 (顶层委托) ---
+            function bindEvents() {
+                // 主标签切换
                 document.querySelectorAll('.form-tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
+                    tab.onclick = function () {
                         document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
                         document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-                        tab.classList.add('active');
-                        document.getElementById('panel' + tab.dataset.panel.charAt(0).toUpperCase() + tab.dataset.panel.slice(1)).classList.add('active');
-                    });
+                        this.classList.add('active');
+                        const panel = this.dataset.panel;
+                        document.getElementById('panel' + panel.charAt(0).toUpperCase() + panel.slice(1)).classList.add('active');
+                    };
                 });
-            },
 
-            bindCategoryFilters() {
-                document.querySelectorAll('.cat-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.renderSupplies(btn.dataset.cat);
-                    });
-                });
-            },
+                // 提交按钮
+                document.getElementById('submitOrderBtn').onclick = submitOrder;
+                document.getElementById('submitSupplyBtn').onclick = submitSupplies;
 
-            // ========== 菜单渲染 ==========
-            renderCategories() {
+                // 物资分类筛选
+                document.getElementById('supplyFilter').onclick = function (e) {
+                    const btn = e.target.closest('.cat-btn');
+                    if (!btn) return;
+                    this.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSupplyCat = btn.dataset.cat;
+                    renderSupplies();
+                };
+
+                // 菜单格子 - 事件委托
+                document.getElementById('menuGrid').onclick = function (e) {
+                    const btn = e.target.closest('.qty-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const id = btn.dataset.id;
+                        const delta = btn.classList.contains('qty-plus') ? 1 : -1;
+                        adjustOrderQty(id, delta);
+                    }
+                };
+
+                // 物资列表 - 事件委托
+                document.getElementById('suppliesList').onclick = function (e) {
+                    const btn = e.target.closest('.qty-btn');
+                    if (btn) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const id = btn.dataset.id;
+                        const delta = btn.classList.contains('supply-plus') ? 1 : -1;
+                        adjustSupplyQty(id, delta);
+                    }
+                };
+
+                // 物资输入框变化
+                document.getElementById('suppliesList').onchange = function (e) {
+                    if (e.target.classList.contains('qty-input')) {
+                        setSupplyQty(e.target.dataset.id, e.target.value);
+                    }
+                };
+            }
+
+            // --- 菜单渲染 ---
+            function renderCategories() {
                 const container = document.getElementById('categoryTabs');
                 let html = '<button class="category-tab active" data-cat="all">全部</button>';
                 categories.forEach(c => {
@@ -380,111 +421,97 @@
                 });
                 container.innerHTML = html;
 
-                container.querySelectorAll('.category-tab').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        container.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.renderMenu(btn.dataset.cat);
-                    });
-                });
-            },
+                container.onclick = function (e) {
+                    const btn = e.target.closest('.category-tab');
+                    if (!btn) return;
+                    this.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMenuCat = btn.dataset.cat;
+                    renderMenu();
+                };
+            }
 
-            renderMenu(catFilter = 'all') {
-                const items = catFilter === 'all'
-                    ? this.menuItems
-                    : this.menuItems.filter(i => i.category === catFilter);
+            function renderMenu() {
+                const items = currentMenuCat === 'all'
+                    ? menuItems
+                    : menuItems.filter(i => i.category === currentMenuCat);
 
-                const showPrice = this.settings.showPriceToStaff;
-                const self = this;
+                const showPrice = settings.showPriceToStaff;
 
                 document.getElementById('menuGrid').innerHTML = items.map(item => {
-                    const inCart = this.orderCart.find(c => c.id === item.id);
+                    const inCart = orderCart.find(c => c.id === item.id);
                     const qty = inCart ? inCart.qty : 0;
                     return `
-                        <div class="menu-item ${qty > 0 ? 'selected' : ''}" data-id="${item.id}">
-                            ${qty > 0 ? '<div class="item-check"><i class="bi bi-check"></i></div>' : ''}
-                            <div class="item-header">
-                                <span class="item-name">${item.name}</span>
-                                ${showPrice ? `<span class="item-price">${appConfig.currency}${item.price}</span>` : ''}
-                            </div>
-                            <div class="item-footer">
-                                <span class="item-unit">/${item.unit}</span>
-                                <div class="item-quantity">
-                                    <button type="button" class="qty-btn qty-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
-                                    <span class="qty-value">${qty}</span>
-                                    <button type="button" class="qty-btn qty-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
-                                </div>
+                    <div class="menu-item ${qty > 0 ? 'selected' : ''}" data-id="${item.id}">
+                        ${qty > 0 ? '<div class="item-check"><i class="bi bi-check"></i></div>' : ''}
+                        <div class="item-header">
+                            <span class="item-name">${item.name}</span>
+                            ${showPrice ? `<span class="item-price">${appConfig.currency}${item.price}</span>` : ''}
+                        </div>
+                        <div class="item-footer">
+                            <span class="item-unit">/${item.unit}</span>
+                            <div class="item-quantity">
+                                <button type="button" class="qty-btn qty-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
+                                <span class="qty-value">${qty}</span>
+                                <button type="button" class="qty-btn qty-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
                 }).join('');
+            }
 
-                // 使用事件委托绑定按钮点击
-                document.getElementById('menuGrid').querySelectorAll('.qty-btn').forEach(btn => {
-                    btn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const id = this.dataset.id;
-                        const delta = this.classList.contains('qty-plus') ? 1 : -1;
-                        self.adjustOrderQty(id, delta);
-                    });
-                });
-            },
-
-            adjustOrderQty(id, delta) {
-                const item = this.menuItems.find(m => m.id === id);
+            function adjustOrderQty(id, delta) {
+                const item = menuItems.find(m => m.id === id);
                 if (!item) return;
 
-                let cartItem = this.orderCart.find(c => c.id === id);
+                let cartItem = orderCart.find(c => c.id === id);
                 if (cartItem) {
                     cartItem.qty = Math.max(0, cartItem.qty + delta);
-                    if (cartItem.qty === 0) this.orderCart = this.orderCart.filter(c => c.id !== id);
+                    if (cartItem.qty === 0) orderCart = orderCart.filter(c => c.id !== id);
                 } else if (delta > 0) {
-                    this.orderCart.push({ id, qty: 1, name: item.name, price: item.price, unit: item.unit });
+                    orderCart.push({ id, qty: 1, name: item.name, price: item.price, unit: item.unit });
                 }
 
-                this.renderMenu(document.querySelector('.category-tab.active').dataset.cat);
-                this.updateOrderSummary();
-            },
+                renderMenu();
+                updateOrderSummary();
+            }
 
-            updateOrderSummary() {
+            function updateOrderSummary() {
                 const container = document.getElementById('selectedSummary');
                 const totalEl = document.getElementById('totalPrice');
 
-                if (this.orderCart.length === 0) {
+                if (orderCart.length === 0) {
                     container.innerHTML = '尚未选择任何菜品';
                     totalEl.textContent = '¥0';
                     return;
                 }
 
                 let total = 0;
-                container.innerHTML = this.orderCart.map(c => {
+                container.innerHTML = orderCart.map(c => {
                     const subtotal = c.price * c.qty;
                     total += subtotal;
                     return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
-                        <span>${c.name} × ${c.qty}</span>
-                        ${this.settings.showPriceToStaff ? `<span>¥${subtotal}</span>` : ''}
-                    </div>`;
+                    <span>${c.name} × ${c.qty}</span>
+                    ${settings.showPriceToStaff ? `<span>¥${subtotal}</span>` : ''}
+                </div>`;
                 }).join('');
 
                 totalEl.textContent = `¥${total}`;
-            },
+            }
 
-            // ========== 物资渲染 ==========
-            renderSupplies(catFilter = 'all') {
-                const items = catFilter === 'all'
-                    ? this.procurement
-                    : this.procurement.filter(p => p.category === catFilter);
+            // --- 物资渲染 ---
+            function renderSupplies() {
+                const items = currentSupplyCat === 'all'
+                    ? procurement
+                    : procurement.filter(p => p.category === currentSupplyCat);
 
-                const showPrice = this.settings.showPriceToStaff;
-                const guestCount = parseInt(document.getElementById('guestCount').value) || 10;
-                const self = this;
+                const showPrice = settings.showPriceToStaff;
 
                 document.getElementById('suppliesList').innerHTML = items.map(item => {
-                    const inCart = this.supplyCart.find(c => c.id === item.id);
+                    const inCart = supplyCart.find(c => c.id === item.id);
                     const qty = inCart ? inCart.qty : 0;
 
-                    // 获取中标价格
                     let winnerPrice = 0;
                     if (item.quotes && item.winnerId) {
                         const quote = item.quotes.find(q => q.supplierId === item.winnerId);
@@ -492,95 +519,70 @@
                     }
 
                     return `
-                        <div class="supply-item">
-                            <div style="flex:1;">
-                                <div class="name">${item.name}</div>
-                                <div class="spec">${item.spec || ''} · ${item.perCapita}${item.unit}/人</div>
-                            </div>
-                            ${showPrice && winnerPrice ? `<div class="price">¥${winnerPrice}/${item.unit}</div>` : ''}
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <button type="button" class="qty-btn supply-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
-                                <input type="number" class="qty-input" value="${qty}" min="0" data-id="${item.id}">
-                                <button type="button" class="qty-btn supply-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
-                            </div>
+                    <div class="supply-item">
+                        <div style="flex:1;">
+                            <div class="name">${item.name}</div>
+                            <div class="spec">${item.spec || ''} · ${item.perCapita}${item.unit}/人</div>
                         </div>
-                    `;
+                        ${showPrice && winnerPrice ? `<div class="price">¥${winnerPrice}/${item.unit}</div>` : ''}
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <button type="button" class="qty-btn supply-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
+                            <input type="number" class="qty-input" value="${qty}" min="0" data-id="${item.id}">
+                            <button type="button" class="qty-btn supply-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
+                        </div>
+                    </div>
+                `;
                 }).join('');
+            }
 
-                // 绑定加减按钮
-                document.getElementById('suppliesList').querySelectorAll('.qty-btn').forEach(btn => {
-                    btn.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const id = this.dataset.id;
-                        const delta = this.classList.contains('supply-plus') ? 1 : -1;
-                        self.adjustSupplyQty(id, delta);
-                    });
-                });
-
-                // 绑定输入框
-                document.getElementById('suppliesList').querySelectorAll('.qty-input').forEach(input => {
-                    input.addEventListener('change', function () {
-                        self.setSupplyQty(this.dataset.id, this.value);
-                    });
-                });
-            },
-
-            adjustSupplyQty(id, delta) {
-                const item = this.procurement.find(p => p.id === id);
+            function adjustSupplyQty(id, delta) {
+                const item = procurement.find(p => p.id === id);
                 if (!item) return;
 
-                let cartItem = this.supplyCart.find(c => c.id === id);
+                let cartItem = supplyCart.find(c => c.id === id);
                 if (cartItem) {
                     cartItem.qty = Math.max(0, cartItem.qty + delta);
-                    if (cartItem.qty === 0) this.supplyCart = this.supplyCart.filter(c => c.id !== id);
+                    if (cartItem.qty === 0) supplyCart = supplyCart.filter(c => c.id !== id);
                 } else if (delta > 0) {
-                    // 默认按人均计算
                     const guestCount = parseInt(document.getElementById('guestCount').value) || 10;
                     const defaultQty = Math.ceil(item.perCapita * guestCount);
-                    this.supplyCart.push({
-                        id,
-                        qty: defaultQty,
-                        name: item.name,
-                        spec: item.spec,
-                        unit: item.unit
-                    });
+                    supplyCart.push({ id, qty: defaultQty, name: item.name, spec: item.spec, unit: item.unit });
                 }
 
-                this.renderSupplies(document.querySelector('.cat-btn.active').dataset.cat);
-                this.updateSupplySummary();
-            },
+                renderSupplies();
+                updateSupplySummary();
+            }
 
-            setSupplyQty(id, value) {
+            function setSupplyQty(id, value) {
                 const qty = Math.max(0, parseInt(value) || 0);
-                const item = this.procurement.find(p => p.id === id);
+                const item = procurement.find(p => p.id === id);
                 if (!item) return;
 
-                let cartItem = this.supplyCart.find(c => c.id === id);
+                let cartItem = supplyCart.find(c => c.id === id);
                 if (qty === 0) {
-                    this.supplyCart = this.supplyCart.filter(c => c.id !== id);
+                    supplyCart = supplyCart.filter(c => c.id !== id);
                 } else if (cartItem) {
                     cartItem.qty = qty;
                 } else {
-                    this.supplyCart.push({ id, qty, name: item.name, spec: item.spec, unit: item.unit });
+                    supplyCart.push({ id, qty, name: item.name, spec: item.spec, unit: item.unit });
                 }
 
-                this.updateSupplySummary();
-            },
+                updateSupplySummary();
+            }
 
-            updateSupplySummary() {
+            function updateSupplySummary() {
                 const container = document.getElementById('suppliesSummary');
                 const totalEl = document.getElementById('suppliesTotalPrice');
 
-                if (this.supplyCart.length === 0) {
+                if (supplyCart.length === 0) {
                     container.innerHTML = '尚未选择任何物资';
                     totalEl.textContent = '¥0';
                     return;
                 }
 
                 let total = 0;
-                container.innerHTML = this.supplyCart.map(c => {
-                    const item = this.procurement.find(p => p.id === c.id);
+                container.innerHTML = supplyCart.map(c => {
+                    const item = procurement.find(p => p.id === c.id);
                     let price = 0;
                     if (item && item.quotes && item.winnerId) {
                         const quote = item.quotes.find(q => q.supplierId === item.winnerId);
@@ -590,70 +592,71 @@
                     total += subtotal;
 
                     return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
-                        <span>${c.name} ${c.qty}${c.unit}</span>
-                        ${this.settings.showPriceToStaff ? `<span>¥${subtotal.toFixed(2)}</span>` : ''}
-                    </div>`;
+                    <span>${c.name} ${c.qty}${c.unit}</span>
+                    ${settings.showPriceToStaff ? `<span>¥${subtotal.toFixed(2)}</span>` : ''}
+                </div>`;
                 }).join('');
 
                 totalEl.textContent = `¥${total.toFixed(2)}`;
-            },
+            }
 
-            // ========== 提交 ==========
-            getBasicInfo() {
+            // --- 提交 ---
+            function getBasicInfo() {
                 return {
                     name: document.getElementById('submitterName').value.trim(),
                     dept: document.getElementById('submitterDept').value,
                     date: document.getElementById('useDate').value,
                     guests: parseInt(document.getElementById('guestCount').value)
                 };
-            },
+            }
 
-            submitOrder() {
-                const info = this.getBasicInfo();
-                if (!info.name) { this.toast('⚠️ 请填写申请人'); return; }
-                if (!info.date) { this.toast('⚠️ 请选择日期'); return; }
-                if (this.orderCart.length === 0) { this.toast('⚠️ 请至少选择一道菜品'); return; }
+            function submitOrder() {
+                const info = getBasicInfo();
+                if (!info.name) { toast('⚠️ 请填写申请人'); return; }
+                if (!info.date) { toast('⚠️ 请选择日期'); return; }
+                if (orderCart.length === 0) { toast('⚠️ 请至少选择一道菜品'); return; }
 
                 DataManager.addSubmission({
                     type: 'ordering',
                     submitter: { name: info.name, dept: info.dept },
                     mealDate: info.date,
                     guestCount: info.guests,
-                    items: this.orderCart,
-                    totalPrice: this.orderCart.reduce((sum, c) => sum + c.price * c.qty, 0),
+                    items: orderCart,
+                    totalPrice: orderCart.reduce((sum, c) => sum + c.price * c.qty, 0),
                     remarks: document.getElementById('orderRemarks').value.trim()
                 });
 
                 document.getElementById('successModal').classList.add('show');
-            },
+            }
 
-            submitSupplies() {
-                const info = this.getBasicInfo();
-                if (!info.name) { this.toast('⚠️ 请填写申请人'); return; }
-                if (!info.date) { this.toast('⚠️ 请选择日期'); return; }
-                if (this.supplyCart.length === 0) { this.toast('⚠️ 请至少选择一项物资'); return; }
+            function submitSupplies() {
+                const info = getBasicInfo();
+                if (!info.name) { toast('⚠️ 请填写申请人'); return; }
+                if (!info.date) { toast('⚠️ 请选择日期'); return; }
+                if (supplyCart.length === 0) { toast('⚠️ 请至少选择一项物资'); return; }
 
                 DataManager.addProcurementSubmission({
                     type: 'supplies',
                     submitter: { name: info.name, dept: info.dept },
                     useDate: info.date,
                     guestCount: info.guests,
-                    items: this.supplyCart,
+                    items: supplyCart,
                     remarks: document.getElementById('supplyRemarks').value.trim()
                 });
 
                 document.getElementById('successModal').classList.add('show');
-            },
+            }
 
-            toast(msg) {
+            function toast(msg) {
                 const t = document.getElementById('toast');
                 t.textContent = msg;
                 t.classList.add('show');
                 setTimeout(() => t.classList.remove('show'), 2500);
             }
-        };
 
-        document.addEventListener('DOMContentLoaded', () => form.init());
+            // 启动
+            document.addEventListener('DOMContentLoaded', init);
+        })();
     </script>
 </body>
 

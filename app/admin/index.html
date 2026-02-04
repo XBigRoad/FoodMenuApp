@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 宴会订餐系统</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* 管理后台专用样式 */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+
+        .login-box p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .login-box button:hover {
+            background: var(--primary-dark);
+        }
+
+        .login-error {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .admin-header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            transition: all 0.2s ease;
+        }
+
+        .admin-tab:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .admin-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .submission-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .submission-meta {
+            display: flex;
+            gap: 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .submission-items {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-confirmed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 登录遮罩 -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h1><i class="bi bi-shield-lock"></i> 管理员登录</h1>
+            <p>请输入管理密码</p>
+            <input type="password" id="adminPassword" placeholder="输入密码"
+                onkeypress="if(event.key==='Enter')admin.login()">
+            <button onclick="admin.login()">登 录</button>
+            <div class="login-error" id="loginError">密码错误，请重试</div>
+        </div>
+    </div>
+
+    <!-- 管理后台主界面 -->
+    <main class="main-content" id="adminMain" style="display: none;">
+        <div class="admin-header">
+            <h1><i class="bi bi-gear-fill"></i> 管理后台</h1>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-ghost" onclick="admin.copyFormLink()"><i class="bi bi-link-45deg"></i>
+                    复制表单链接</button>
+                <button class="btn btn-ghost" onclick="admin.backup()"><i class="bi bi-download"></i> 备份</button>
+                <button class="btn btn-ghost" onclick="admin.logout()"><i class="bi bi-box-arrow-right"></i> 退出</button>
+            </div>
+        </div>
+
+        <!-- 功能标签页 -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-panel="submissions"><i class="bi bi-inbox"></i> 订单管理</button>
+            <button class="admin-tab" data-panel="menu"><i class="bi bi-grid-3x3-gap"></i> 菜单管理</button>
+            <button class="admin-tab" data-panel="settings"><i class="bi bi-sliders"></i> 系统设置</button>
+        </div>
+
+        <!-- 订单管理面板 -->
+        <div class="admin-panel active" id="panelSubmissions">
+            <div class="action-bar">
+                <button class="btn btn-secondary" onclick="admin.refreshSubmissions()"><i
+                        class="bi bi-arrow-clockwise"></i> 刷新</button>
+                <button class="btn btn-secondary" onclick="admin.exportSubmissions()"><i
+                        class="bi bi-file-earmark-spreadsheet"></i> 导出Excel</button>
+                <span style="flex:1;"></span>
+                <span id="submissionCount" style="color:var(--text-secondary);"></span>
+            </div>
+            <div id="submissionsList"></div>
+        </div>
+
+        <!-- 菜单管理面板 -->
+        <div class="admin-panel" id="panelMenu">
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="admin.addMenuItem()"><i class="bi bi-plus-circle"></i>
+                    添加菜品</button>
+                <button class="btn btn-secondary" onclick="admin.addCategory()"><i class="bi bi-folder-plus"></i>
+                    添加分类</button>
+            </div>
+            <div id="menuEditor" class="menu-grid"></div>
+        </div>
+
+        <!-- 系统设置面板 -->
+        <div class="admin-panel" id="panelSettings">
+            <div class="submitter-info">
+                <h3><i class="bi bi-key"></i> 修改管理密码</h3>
+                <div style="display:flex; gap:10px; margin-top:12px;">
+                    <input type="password" id="newPassword" placeholder="新密码"
+                        style="flex:1; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md);">
+                    <button class="btn btn-primary" onclick="admin.changePassword()">更新密码</button>
+                </div>
+            </div>
+            <div class="submitter-info" style="margin-top:20px;">
+                <h3><i class="bi bi-upload"></i> 恢复数据备份</h3>
+                <p style="color:var(--text-secondary); margin:12px 0;">上传之前下载的 JSON 备份文件</p>
+                <input type="file" id="restoreFile" accept=".json" onchange="admin.restore(event)">
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="../shared/data.js"></script>
+    <script>
+        const admin = {
+            init() {
+                // 检查是否已登录
+                if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                    this.showAdmin();
+                }
+                this.bindTabs();
+            },
+
+            login() {
+                const pwd = document.getElementById('adminPassword').value;
+                if (DataManager.verifyAdminPassword(pwd)) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    this.showAdmin();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            },
+
+            logout() {
+                sessionStorage.removeItem('adminLoggedIn');
+                location.reload();
+            },
+
+            showAdmin() {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('adminMain').style.display = 'block';
+                this.refreshSubmissions();
+                this.renderMenuEditor();
+            },
+
+            bindTabs() {
+                document.querySelectorAll('.admin-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+                        tab.classList.add('active');
+                        document.getElementById('panel' + tab.dataset.panel.charAt(0).toUpperCase() + tab.dataset.panel.slice(1)).classList.add('active');
+                    });
+                });
+            },
+
+            // ============ 订单管理 ============
+            refreshSubmissions() {
+                const subs = DataManager.getSubmissions().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                document.getElementById('submissionCount').textContent = `共 ${subs.length} 条订单`;
+
+                if (subs.length === 0) {
+                    document.getElementById('submissionsList').innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:40px;">暂无订单</p>';
+                    return;
+                }
+
+                document.getElementById('submissionsList').innerHTML = subs.map(sub => `
+                    <div class="submission-card">
+                        <div class="submission-header">
+                            <strong>${sub.submitter.name}</strong> 
+                            <span class="status-badge ${sub.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                                ${sub.status === 'confirmed' ? '✓ 已确认' : '待处理'}
+                            </span>
+                        </div>
+                        <div class="submission-meta">
+                            <span><i class="bi bi-building"></i> ${sub.submitter.dept || '未填写'}</span>
+                            <span><i class="bi bi-calendar"></i> ${sub.mealDate}</span>
+                            <span><i class="bi bi-people"></i> ${sub.guestCount}人</span>
+                            <span><i class="bi bi-clock"></i> ${new Date(sub.timestamp).toLocaleString()}</span>
+                        </div>
+                        <div class="submission-items">
+                            ${sub.items.map(i => `<span style="display:inline-block; background:var(--bg-tertiary); padding:4px 10px; border-radius:20px; margin:4px 4px 4px 0; font-size:13px;">${i.name} ×${i.qty}</span>`).join('')}
+                            <div style="margin-top:12px; font-weight:700;">总计: ¥${sub.totalPrice}</div>
+                            ${sub.remarks ? `<div style="margin-top:8px; color:var(--text-secondary); font-size:13px;">备注: ${sub.remarks}</div>` : ''}
+                        </div>
+                        <div style="margin-top:12px; display:flex; gap:8px;">
+                            ${sub.status !== 'confirmed' ? `<button class="btn btn-primary btn-sm" onclick="admin.confirmSubmission('${sub.id}')"><i class="bi bi-check"></i> 确认</button>` : ''}
+                            <button class="btn btn-ghost btn-sm" onclick="admin.deleteSubmission('${sub.id}')"><i class="bi bi-trash"></i> 删除</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            confirmSubmission(id) {
+                const data = DataManager.getData();
+                const sub = data.submissions.find(s => s.id === id);
+                if (sub) {
+                    sub.status = 'confirmed';
+                    DataManager.saveData(data);
+                    this.refreshSubmissions();
+                    this.toast('✅ 已确认');
+                }
+            },
+
+            deleteSubmission(id) {
+                if (!confirm('确定删除此订单？')) return;
+                const data = DataManager.getData();
+                data.submissions = data.submissions.filter(s => s.id !== id);
+                DataManager.saveData(data);
+                this.refreshSubmissions();
+                this.toast('✅ 已删除');
+            },
+
+            exportSubmissions() {
+                const subs = DataManager.getSubmissions();
+                if (subs.length === 0) { this.toast('⚠️ 暂无数据'); return; }
+
+                let csv = '\uFEFF姓名,部门,用餐日期,人数,菜品,总价,备注,状态,提交时间\n';
+                subs.forEach(s => {
+                    const items = s.items.map(i => `${i.name}×${i.qty}`).join('; ');
+                    csv += `"${s.submitter.name}","${s.submitter.dept}","${s.mealDate}",${s.guestCount},"${items}",${s.totalPrice},"${s.remarks || ''}","${s.status}","${s.timestamp}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `订单导出_${new Date().toLocaleDateString()}.csv`;
+                a.click();
+                this.toast('✅ 已导出');
+            },
+
+            // ============ 菜单管理 ============
+            renderMenuEditor() {
+                const items = DataManager.getMenuItems();
+                document.getElementById('menuEditor').innerHTML = items.map(item => `
+                    <div class="menu-item" style="cursor:default;">
+                        <div class="item-header">
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-price">¥${item.price}</span>
+                        </div>
+                        <div class="item-footer">
+                            <span class="item-unit">/${item.unit}</span>
+                            <div style="display:flex; gap:8px;">
+                                <button class="qty-btn" onclick="admin.editMenuItem('${item.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="qty-btn" style="background:var(--danger); color:white;" onclick="admin.deleteMenuItem('${item.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            addMenuItem() {
+                const name = prompt('菜品名称:');
+                if (!name) return;
+                const price = parseFloat(prompt('价格 (¥):', '50')) || 50;
+                const unit = prompt('单位 (份/条/例等):', '份') || '份';
+                const catId = prompt('分类ID (appetizer/main/soup/staple/dessert/fruit/beverage):', 'main') || 'main';
+
+                const data = DataManager.getData();
+                data.menuItems.push({ id: 'item_' + Date.now(), category: catId, name, price, unit });
+                DataManager.saveData(data);
+                this.renderMenuEditor();
+                this.toast('✅ 已添加');
+            },
+
+            editMenuItem(id) {
+                const data = DataManager.getData();
+                const item = data.menuItems.find(i => i.id === id);
+                if (!item) return;
+
+                const name = prompt('菜品名称:', item.name);
+                if (!name) return;
+                const price = parseFloat(prompt('价格 (¥):', item.price));
+
+                item.name = name;
+                item.price = price;
+                DataManager.saveData(data);
+                this.renderMenuEditor();
+                this.toast('✅ 已更新');
+            },
+
+            deleteMenuItem(id) {
+                if (!confirm('确定删除此菜品？')) return;
+                const data = DataManager.getData();
+                data.menuItems = data.menuItems.filter(i => i.id !== id);
+                DataManager.saveData(data);
+                this.renderMenuEditor();
+                this.toast('✅ 已删除');
+            },
+
+            // ============ 系统设置 ============
+            changePassword() {
+                const newPwd = document.getElementById('newPassword').value;
+                if (!newPwd || newPwd.length < 4) {
+                    this.toast('⚠️ 密码至少4位');
+                    return;
+                }
+                DataManager.changeAdminPassword(newPwd);
+                document.getElementById('newPassword').value = '';
+                this.toast('✅ 密码已更新');
+            },
+
+            copyFormLink() {
+                const link = location.origin + location.pathname.replace('/admin/', '/form/');
+                navigator.clipboard.writeText(link);
+                this.toast('✅ 表单链接已复制');
+            },
+
+            backup() {
+                const json = DataManager.exportBackup();
+                const blob = new Blob([json], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `banquet_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                this.toast('✅ 备份已下载');
+            },
+
+            restore(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (DataManager.importBackup(e.target.result)) {
+                        this.toast('✅ 数据已恢复');
+                        this.refreshSubmissions();
+                        this.renderMenuEditor();
+                    } else {
+                        this.toast('❌ 文件格式无效');
+                    }
+                };
+                reader.readAsText(file);
+            },
+
+            toast(msg) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2500);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => admin.init());
+    </script>
+</body>
+
+</html>

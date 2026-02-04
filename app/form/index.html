@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订餐表单 - 员工填写</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* 员工表单专用样式 */
+        .form-header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            color: white;
+            margin: -24px -24px 24px -24px;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .form-header p {
+            opacity: 0.9;
+        }
+
+        .submitter-info {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .submitter-info h3 {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-field label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .info-field input,
+        .info-field select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .info-field input:focus,
+        .info-field select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            margin-top: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .success-modal.show {
+            display: flex;
+        }
+
+        .success-content {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .success-content i {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .success-content h2 {
+            margin-bottom: 10px;
+        }
+
+        .success-content p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="main-content" style="max-width: 900px; margin: 0 auto; padding-top: 24px;">
+        <!-- 表单头部 -->
+        <div class="form-header">
+            <h1><i class="bi bi-cup-hot-fill"></i> 宴会订餐</h1>
+            <p>请填写您的订餐需求</p>
+        </div>
+
+        <!-- 提交人信息 -->
+        <div class="submitter-info">
+            <h3><i class="bi bi-person-badge"></i> 基本信息</h3>
+            <div class="info-grid">
+                <div class="info-field">
+                    <label>您的姓名 *</label>
+                    <input type="text" id="submitterName" placeholder="请输入姓名" required>
+                </div>
+                <div class="info-field">
+                    <label>部门</label>
+                    <select id="submitterDept">
+                        <option value="">请选择部门</option>
+                        <option value="销售部">销售部</option>
+                        <option value="市场部">市场部</option>
+                        <option value="技术部">技术部</option>
+                        <option value="人事部">人事部</option>
+                        <option value="财务部">财务部</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="info-field">
+                    <label>用餐日期 *</label>
+                    <input type="date" id="mealDate" required>
+                </div>
+                <div class="info-field">
+                    <label>用餐人数 *</label>
+                    <input type="number" id="guestCount" value="10" min="1" max="100" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分类标签 -->
+        <div class="category-tabs" id="categoryTabs" style="margin-bottom: 20px;"></div>
+
+        <!-- 菜品选择 -->
+        <div class="menu-grid" id="menuGrid"></div>
+
+        <!-- 已选摘要 -->
+        <div class="submitter-info" style="margin-top: 24px;">
+            <h3><i class="bi bi-cart-check"></i> 已选菜品</h3>
+            <div id="selectedSummary" style="color: var(--text-muted);">尚未选择任何菜品</div>
+            <div style="margin-top: 16px; font-size: 18px; font-weight: 700;">
+                预估总价: <span id="totalPrice" style="color: var(--primary);">¥0</span>
+            </div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="submitter-info">
+            <h3><i class="bi bi-chat-left-text"></i> 备注说明</h3>
+            <textarea id="remarks" placeholder="如有特殊要求请在此说明（如忌口、加辣等）"
+                style="width:100%; height:80px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-md); resize:none; font-family:inherit;"></textarea>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button class="submit-btn" id="submitBtn">
+            <i class="bi bi-send"></i> 提交订餐
+        </button>
+    </main>
+
+    <!-- 成功弹窗 -->
+    <div class="success-modal" id="successModal">
+        <div class="success-content">
+            <i class="bi bi-check-circle-fill"></i>
+            <h2>提交成功！</h2>
+            <p>您的订餐需求已提交，行政部门会尽快处理。</p>
+            <button class="btn btn-primary" onclick="location.reload()" style="width:100%;">
+                继续填写新订单
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="../shared/data.js"></script>
+    <script>
+        // ============ 员工表单逻辑 ============
+        const form = {
+            cart: [],
+            menuItems: [],
+
+            init() {
+                this.menuItems = DataManager.getMenuItems();
+                this.setDefaultDate();
+                this.renderCategories();
+                this.renderMenu();
+                this.bindEvents();
+            },
+
+            setDefaultDate() {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('mealDate').value = tomorrow.toISOString().split('T')[0];
+            },
+
+            renderCategories() {
+                const container = document.getElementById('categoryTabs');
+                let html = '<button class="category-tab active" data-cat="all">全部</button>';
+                categories.forEach(c => {
+                    html += `<button class="category-tab" data-cat="${c.id}"><i class="bi ${c.icon}"></i> ${c.name}</button>`;
+                });
+                container.innerHTML = html;
+
+                container.querySelectorAll('.category-tab').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        container.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.renderMenu(btn.dataset.cat);
+                    });
+                });
+            },
+
+            renderMenu(catFilter = 'all') {
+                const items = catFilter === 'all'
+                    ? this.menuItems
+                    : this.menuItems.filter(i => i.category === catFilter);
+
+                document.getElementById('menuGrid').innerHTML = items.map(item => {
+                    const inCart = this.cart.find(c => c.id === item.id);
+                    const qty = inCart ? inCart.qty : 0;
+                    return `
+                        <div class="menu-item ${qty > 0 ? 'selected' : ''}" data-id="${item.id}">
+                            ${qty > 0 ? '<div class="item-check"><i class="bi bi-check"></i></div>' : ''}
+                            <div class="item-header">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-price">${appConfig.currency}${item.price}</span>
+                            </div>
+                            <div class="item-footer">
+                                <span class="item-unit">/${item.unit}</span>
+                                <div class="item-quantity">
+                                    <button class="qty-btn" onclick="form.adjustQty('${item.id}', -1)"><i class="bi bi-dash"></i></button>
+                                    <span class="qty-value">${qty}</span>
+                                    <button class="qty-btn" onclick="form.adjustQty('${item.id}', 1)"><i class="bi bi-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            adjustQty(id, delta) {
+                const item = this.menuItems.find(m => m.id === id);
+                if (!item) return;
+
+                let cartItem = this.cart.find(c => c.id === id);
+                if (cartItem) {
+                    cartItem.qty = Math.max(0, cartItem.qty + delta);
+                    if (cartItem.qty === 0) this.cart = this.cart.filter(c => c.id !== id);
+                } else if (delta > 0) {
+                    this.cart.push({ id, qty: 1, name: item.name, price: item.price, unit: item.unit });
+                }
+
+                this.renderMenu(document.querySelector('.category-tab.active').dataset.cat);
+                this.updateSummary();
+            },
+
+            updateSummary() {
+                const container = document.getElementById('selectedSummary');
+                const totalEl = document.getElementById('totalPrice');
+
+                if (this.cart.length === 0) {
+                    container.innerHTML = '尚未选择任何菜品';
+                    totalEl.textContent = '¥0';
+                    return;
+                }
+
+                let total = 0;
+                container.innerHTML = this.cart.map(c => {
+                    const subtotal = c.price * c.qty;
+                    total += subtotal;
+                    return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+                        <span>${c.name} × ${c.qty}</span>
+                        <span>¥${subtotal}</span>
+                    </div>`;
+                }).join('');
+
+                totalEl.textContent = `¥${total}`;
+            },
+
+            bindEvents() {
+                document.getElementById('submitBtn').addEventListener('click', () => this.submit());
+            },
+
+            submit() {
+                const name = document.getElementById('submitterName').value.trim();
+                const dept = document.getElementById('submitterDept').value;
+                const date = document.getElementById('mealDate').value;
+                const guests = parseInt(document.getElementById('guestCount').value);
+                const remarks = document.getElementById('remarks').value.trim();
+
+                if (!name) { this.toast('⚠️ 请填写您的姓名'); return; }
+                if (!date) { this.toast('⚠️ 请选择用餐日期'); return; }
+                if (this.cart.length === 0) { this.toast('⚠️ 请至少选择一道菜品'); return; }
+
+                const submission = {
+                    submitter: { name, dept },
+                    mealDate: date,
+                    guestCount: guests,
+                    items: this.cart,
+                    totalPrice: this.cart.reduce((sum, c) => sum + c.price * c.qty, 0),
+                    remarks
+                };
+
+                DataManager.addSubmission(submission);
+                document.getElementById('successModal').classList.add('show');
+            },
+
+            toast(msg) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2500);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => form.init());
+    </script>
+</body>
+
+</html>

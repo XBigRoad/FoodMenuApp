@@ -395,6 +395,7 @@
                     : this.menuItems.filter(i => i.category === catFilter);
 
                 const showPrice = this.settings.showPriceToStaff;
+                const self = this;
 
                 document.getElementById('menuGrid').innerHTML = items.map(item => {
                     const inCart = this.orderCart.find(c => c.id === item.id);
@@ -409,14 +410,25 @@
                             <div class="item-footer">
                                 <span class="item-unit">/${item.unit}</span>
                                 <div class="item-quantity">
-                                    <button class="qty-btn" onclick="form.adjustOrderQty('${item.id}', -1)"><i class="bi bi-dash"></i></button>
+                                    <button type="button" class="qty-btn qty-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
                                     <span class="qty-value">${qty}</span>
-                                    <button class="qty-btn" onclick="form.adjustOrderQty('${item.id}', 1)"><i class="bi bi-plus"></i></button>
+                                    <button type="button" class="qty-btn qty-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
                                 </div>
                             </div>
                         </div>
                     `;
                 }).join('');
+
+                // 使用事件委托绑定按钮点击
+                document.getElementById('menuGrid').querySelectorAll('.qty-btn').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const id = this.dataset.id;
+                        const delta = this.classList.contains('qty-plus') ? 1 : -1;
+                        self.adjustOrderQty(id, delta);
+                    });
+                });
             },
 
             adjustOrderQty(id, delta) {
@@ -466,6 +478,7 @@
 
                 const showPrice = this.settings.showPriceToStaff;
                 const guestCount = parseInt(document.getElementById('guestCount').value) || 10;
+                const self = this;
 
                 document.getElementById('suppliesList').innerHTML = items.map(item => {
                     const inCart = this.supplyCart.find(c => c.id === item.id);
@@ -486,14 +499,31 @@
                             </div>
                             ${showPrice && winnerPrice ? `<div class="price">¥${winnerPrice}/${item.unit}</div>` : ''}
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <button class="qty-btn" onclick="form.adjustSupplyQty('${item.id}', -1)"><i class="bi bi-dash"></i></button>
-                                <input type="number" class="qty-input" value="${qty}" min="0" 
-                                    onchange="form.setSupplyQty('${item.id}', this.value)">
-                                <button class="qty-btn" onclick="form.adjustSupplyQty('${item.id}', 1)"><i class="bi bi-plus"></i></button>
+                                <button type="button" class="qty-btn supply-minus" data-id="${item.id}"><i class="bi bi-dash"></i></button>
+                                <input type="number" class="qty-input" value="${qty}" min="0" data-id="${item.id}">
+                                <button type="button" class="qty-btn supply-plus" data-id="${item.id}"><i class="bi bi-plus"></i></button>
                             </div>
                         </div>
                     `;
                 }).join('');
+
+                // 绑定加减按钮
+                document.getElementById('suppliesList').querySelectorAll('.qty-btn').forEach(btn => {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const id = this.dataset.id;
+                        const delta = this.classList.contains('supply-plus') ? 1 : -1;
+                        self.adjustSupplyQty(id, delta);
+                    });
+                });
+
+                // 绑定输入框
+                document.getElementById('suppliesList').querySelectorAll('.qty-input').forEach(input => {
+                    input.addEventListener('change', function () {
+                        self.setSupplyQty(this.dataset.id, this.value);
+                    });
+                });
             },
 
             adjustSupplyQty(id, delta) {

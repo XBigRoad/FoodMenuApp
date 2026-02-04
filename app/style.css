@@ -463,17 +463,26 @@ select {
     width: 32px;
     height: 32px;
     background: var(--bg-tertiary);
+    border: 1px solid var(--border);
     border-radius: 50%;
     font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
 }
 
 .qty-btn:hover {
     background: var(--primary);
     color: white;
+    border-color: var(--primary);
+}
+
+.qty-btn:active {
+    transform: scale(0.95);
 }
 
 .qty-value {
